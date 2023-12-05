@@ -22,3 +22,6 @@
 *~
 *.swp
 *.bak
+
+# Fichiers a conserver
+!build/
