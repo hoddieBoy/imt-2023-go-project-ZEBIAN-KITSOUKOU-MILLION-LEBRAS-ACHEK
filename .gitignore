@@ -1,0 +1,24 @@
+# Dossiers
+/bin/
+/pkg/
+/vendor/
+
+# Fichiers exécutables
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Fichiers d'environnement
+.env
+
+# Fichiers de configuration
+*.iml
+.idea/
+.vscode/
+
+# Fichiers de sauvegarde
+*~
+*.swp
+*.bak
