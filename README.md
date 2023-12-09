@@ -2,12 +2,13 @@
 
 ## Description
 
-This project implements a system for collecting and retrieving meteorological data from airport sensors. 
+This project implements a system for collecting and retrieving meteorological data from airport sensors.
 Data collected includes temperature, atmospheric pressure and wind speed.
 
 ## Structure
 
 The project is structured as follows:
+
 - `api/` contains OpenAPI/Swagger specifications, JSON schema files, protocol definition files
 - `cmd/` contains all main applications for this project
 - `internal/` contains the internal code specific to the project
@@ -32,7 +33,6 @@ The project is structured as follows:
 ## Usage
 
 ### Run the project
-
 
 ## Authors
 
