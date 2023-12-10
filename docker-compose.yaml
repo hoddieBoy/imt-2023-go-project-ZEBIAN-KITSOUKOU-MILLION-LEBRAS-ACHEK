@@ -1,0 +1,50 @@
+version: '3.8'
+
+# Networks
+networks:
+    default:
+        driver: bridge
+
+# Services
+services:
+    ## InfluxDB - For sensor data
+    influxdb:
+        image: influxdb:latest
+        container_name: influxdb
+        restart: unless-stopped
+        ports:
+            - "8086:8086"
+        volumes:
+            - influxdb:/var/lib/influxdb
+        networks:
+            - default
+        environment:
+            - DOCKER_INFLUXDB_INIT_MODE=setup
+            - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_USER}
+            - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD}
+            - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_ORG}
+            - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_BUCKET}
+            - DOCKER_INFLUXDB_INIT_RETENTION=${INFLUXDB_RETENTION}
+            - DOCKER_INFLUXDB_INIT_DB=${INFLUXDB_DB}
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.influxdb.rule=Host(`influxdb.metrics.meteo-airport.localhost`)"
+            - "traefik.http.services.influxdb.loadbalancer.server.port=8086"
+
+    ## Reverse Proxy - For accessing each service by subdomain
+    reverse-proxy:
+        container_name: reverse-proxy
+        build:
+            context: ./build/traefik
+            dockerfile: Dockerfile
+        restart: unless-stopped
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+
+# Volumes
+volumes:
+    influxdb:
+    grafana:
