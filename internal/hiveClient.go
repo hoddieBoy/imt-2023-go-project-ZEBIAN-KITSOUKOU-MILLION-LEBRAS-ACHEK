@@ -8,15 +8,16 @@ import (
 )
 
 /*
-	client := makeDefaultClient()
+client := makeDefaultClient()
 
-	subscribeWithQos_1(client, "topic/test")
-	publish(client, "This is an example", "topic/test")
+subscribeWithQos_1(client, "topic/test")
+publish(client, "This is an example", "topic/test")
 
-	time.Sleep(time.Second)
+time.Sleep(time.Second)
 
-	client.Disconnect(250)
+client.Disconnect(250)
 */
+var dbConfig *Config
 
 func CreateFileLogger(filePath string) (*log.Logger, error) {
 	file, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
@@ -42,13 +43,14 @@ func makeDefaultClient() mqtt.Client {
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
 		log1.Printf("Connection lost: %v", err)
 	}
-	var broker = "411d6c045163486b846c891f3910e83f.s2.eu.hivemq.cloud"
-	var port = 8883
+
+	dbConfig = retrievePropertiesFromConfig()
+
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tls://%s:%d", broker, port))
+	opts.AddBroker(fmt.Sprintf("tls://%s:%d", dbConfig.Server.Host, dbConfig.Server.Port))
 	opts.SetClientID("aClientId")
-	opts.SetUsername("arduino")
-	opts.SetPassword("not4nArduino")
+	opts.SetUsername(dbConfig.Server.Username)
+	opts.SetPassword(dbConfig.Server.Password)
 
 	opts.SetDefaultPublishHandler(messagePubHandler)
 	opts.OnConnect = connectHandler

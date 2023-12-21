@@ -5,7 +5,7 @@ import "os"
 
 type Config struct {
 	Server struct {
-		Port     string `yaml:"port"`
+		Port     int    `yaml:"port"`
 		Host     string `yaml:"host"`
 		Username string `yaml:"username"`
 		Password string `yaml:"password"`
