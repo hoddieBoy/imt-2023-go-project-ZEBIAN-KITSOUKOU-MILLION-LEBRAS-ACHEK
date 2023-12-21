@@ -1,0 +1,7 @@
+# Server configurations
+server:
+    host: "localhost"
+    port: 8000
+    username: "arduino"
+    password: "not4nArduino"
+
