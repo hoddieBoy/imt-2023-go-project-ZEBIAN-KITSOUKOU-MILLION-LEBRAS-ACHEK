@@ -2,6 +2,7 @@
 /bin/
 /pkg/
 /vendor/
+/output/
 
 # Fichiers exécutables
 *.exe
@@ -22,6 +23,7 @@
 *~
 *.swp
 *.bak
+logs.txt
 
 # Fichiers a conserver
 !build/
