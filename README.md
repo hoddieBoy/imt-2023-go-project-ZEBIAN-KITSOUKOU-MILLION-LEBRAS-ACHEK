@@ -30,6 +30,26 @@ The project is structured as follows:
     git clone https://github.com/jarhead-killgrave/imt-2023-go-project-ZEBIAN-KITSOUKOU-MILLION-LEBRAS-ACHEK.git
     ```
 
+2. Copy the `.env.dev` file to `.env`, and edit it to match your configuration:
+   ```bash
+   cp .env.example .env
+   ```
+   or for Windows:
+   ```bash
+	copy .env.example .env
+   ```
+
+3. Initialize all necessary services:
+   ```bash
+   make init
+   ```
+   Alternatively, you can initialize each service without using `make`:
+   ```bash
+   docker compose up -d
+   ```
+   After initialization, you should be able to access the following services:
+	- [http://influxdb.metrics.meteo-airport.localhost](http://influxdb.metrics.meteo-airport.localhost) *(InfluxDB)*
+
 ## Usage
 
 ### Run the project
