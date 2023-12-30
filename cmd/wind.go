@@ -44,7 +44,7 @@ func main(){
 
 	type wind struct {
 		idCaptor int
-		idAirport  int
+		idAirport  string
 		mesure string
 		value int
 		timestamp time.Time
@@ -55,7 +55,7 @@ func main(){
 
 		data := wind{
 			idCaptor : 2,
-			idAirport : 1,
+			idAirport : "CDG",
 			mesure : "Wind speed",
 			value : actualWind,
 			timestamp : time.Now(),
