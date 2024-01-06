@@ -1,4 +1,4 @@
-package mqtt
+package mqtt_helper
 
 import (
 	"fmt"
@@ -6,8 +6,9 @@ import (
 	"os"
 )
 
-type Config struct {
+type MQTTConfig struct {
 	Server struct {
+		Protocol string `yaml:"protocol"`
 		Port     int    `yaml:"port"`
 		Host     string `yaml:"host"`
 		Username string `yaml:"username"`
@@ -15,10 +16,10 @@ type Config struct {
 	} `yaml:"server"`
 }
 
-func RetrievePropertiesFromConfig(filePath string) (*Config, error) {
+func RetrievePropertiesFromConfig(filePath string) (*MQTTConfig, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open file: %w", err)
+		return nil, fmt.Errorf("failed to open file:\n\t <<%w>>", err)
 	}
 	defer func() {
 		if closeErr := f.Close(); closeErr != nil && err == nil {
@@ -26,10 +27,10 @@ func RetrievePropertiesFromConfig(filePath string) (*Config, error) {
 		}
 	}()
 
-	var cfg Config
+	var cfg MQTTConfig
 	decoder := yaml.NewDecoder(f)
 	if decoder.Decode(&cfg) != nil {
-		return nil, fmt.Errorf("failed to decode file: %w", err)
+		return nil, fmt.Errorf("failed to decode file: <<%w>>", err)
 	}
 	return &cfg, err
 }
