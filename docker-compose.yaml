@@ -45,7 +45,7 @@ services:
             - "9001:9001"
             - "8883:8883"
         healthcheck:
-            test: ["CMD", "mosquitto_pub", "-h", "localhost", "-t", "test", "-m", "test"]
+            test: ["CMD", "mosquitto_pub", "-h", "localhost", "-t", "test", "-m", "test", "-u", "admin", "-P", "anotherSecretPassword"]
             interval: 30s
             timeout: 10s
             retries: 5

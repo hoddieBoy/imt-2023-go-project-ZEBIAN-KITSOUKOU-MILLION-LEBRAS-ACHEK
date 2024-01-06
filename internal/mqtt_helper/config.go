@@ -19,7 +19,7 @@ type MQTTConfig struct {
 func RetrievePropertiesFromConfig(filePath string) (*MQTTConfig, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open file:\n\t <<%w>>", err)
+		return nil, fmt.Errorf("\033[31mfailed to open file:\n\t<<%w>>\033[0m", err)
 	}
 	defer func() {
 		if closeErr := f.Close(); closeErr != nil && err == nil {
@@ -30,7 +30,7 @@ func RetrievePropertiesFromConfig(filePath string) (*MQTTConfig, error) {
 	var cfg MQTTConfig
 	decoder := yaml.NewDecoder(f)
 	if decoder.Decode(&cfg) != nil {
-		return nil, fmt.Errorf("failed to decode file: <<%w>>", err)
+		return nil, fmt.Errorf("\033[31mfailed to decode file:\n\t<<%w>>\033[0m", err)
 	}
 	return &cfg, err
 }
