@@ -31,7 +31,7 @@ func CreateFileLogger(filePath string) (*log.Logger, error) {
 
 var log1, _ = CreateFileLogger("logs.txt")
 
-func makeDefaultClient() mqtt.Client {
+func MakeDefaultClient() mqtt.Client {
 	var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 		log1.Printf("Received message \"%s\" from topic \"%s\"\n", msg.Payload(), msg.Topic())
 	}
@@ -75,7 +75,7 @@ func subscribeWithQos_1(client mqtt.Client, topic string) {
 	log1.Printf("Subscribed to topic: %s", topic)
 }
 
-func publish(client mqtt.Client, message string, topic string) {
+func Publish(client mqtt.Client, message string, topic string) {
 	token := client.Publish(topic, 0, false, message)
 	token.Wait()
 	if token.Error() != nil {
