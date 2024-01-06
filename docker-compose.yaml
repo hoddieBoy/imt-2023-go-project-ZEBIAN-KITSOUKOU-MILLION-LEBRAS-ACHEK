@@ -44,8 +44,6 @@ services:
             - "1883:1883"
             - "9001:9001"
             - "8883:8883"
-        volumes:
-            - ./mosquitto/config:/etc/mosquitto
         healthcheck:
             test: ["CMD", "mosquitto_pub", "-h", "localhost", "-t", "test", "-m", "test"]
             interval: 30s

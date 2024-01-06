@@ -6,9 +6,6 @@ ARG MQTT_PASSWORD
 # Set the configuration file
 COPY conf/mosquitto.conf /mosquitto/config/mosquitto.conf
 
-# Set the password file
-RUN echo "$MQTT_USER:$MQTT_PASSWORD" > /mosquitto/config/passwd
-
-# Encrypt the password file
-RUN chmod 600 /mosquitto/config/passwd
-RUN mosquitto_passwd -U /mosquitto/config/passwd
+# Create the password file
+RUN touch /mosquitto/config/passwd
+RUN mosquitto_passwd -b /mosquitto/config/passwd "$MQTT_USER" "$MQTT_PASSWORD"
