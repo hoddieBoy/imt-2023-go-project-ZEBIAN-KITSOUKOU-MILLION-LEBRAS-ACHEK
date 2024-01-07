@@ -1,10 +1,5 @@
 version: '3.8'
 
-# Networks
-networks:
-    default:
-        driver: bridge
-
 # Services
 services:
     ## InfluxDB - For sensor data
@@ -16,8 +11,6 @@ services:
             - "8086:8086"
         volumes:
             - influxdb:/var/lib/influxdb
-        networks:
-            - default
         environment:
             - DOCKER_INFLUXDB_INIT_MODE=setup
             - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_USER}
@@ -30,6 +23,48 @@ services:
             - "traefik.enable=true"
             - "traefik.http.routers.influxdb.rule=Host(`influxdb.metrics.meteo-airport.localhost`)"
             - "traefik.http.services.influxdb.loadbalancer.server.port=8086"
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8086/ping"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+
+
+    ## Mosquitto - For MQTT broker
+    mosquitto:
+        build:
+            context: ./build/mosquitto
+            dockerfile: Dockerfile
+            args:
+                - MQTT_USER=${MQTT_USER}
+                - MQTT_PASSWORD=${MQTT_PASSWORD}
+        container_name: mosquitto
+        restart: unless-stopped
+        ports:
+            - "1883:1883"
+            - "9001:9001"
+            - "8883:8883"
+        healthcheck:
+            test: ["CMD", "mosquitto_pub", "-h", "localhost", "-t", "test", "-m", "test", "-u", "admin", "-P", "anotherSecretPassword"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.mosquitto.rule=Host(`mqtt.meteo-airport.localhost`)"
+            - "traefik.http.services.mosquitto.loadbalancer.server.port=9001"
+
+    # MQTTX - For MQTT Web Client
+    mqtt-web-client:
+        image: emqx/mqttx-web
+        container_name: mqtt-web-client
+        restart: unless-stopped
+        ports:
+            - "81:80"
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.mqtt-web-client.rule=Host(`mqttx.meteo-airport.localhost`)"
+            - "traefik.http.services.mqtt-web-client.loadbalancer.server.port=80"
 
     ## Reverse Proxy - For accessing each service by subdomain
     reverse-proxy:
@@ -47,4 +82,3 @@ services:
 # Volumes
 volumes:
     influxdb:
-    grafana:
