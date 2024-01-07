@@ -12,7 +12,7 @@ import (
 // Manager handles subscriptions and manages recorders
 type Manager struct {
 	recordersMutex sync.RWMutex
-	recorders      map[sensor.Type]map[Recorder]bool
+	recorders      map[sensor.MeasurementType]map[Recorder]bool
 	mqttClient     *mqtt_helper.MQTTClient
 	closeChan      chan struct{}
 }
@@ -20,14 +20,14 @@ type Manager struct {
 // NewManager creates a new Manager instance
 func NewManager(mqttClient *mqtt_helper.MQTTClient) *Manager {
 	return &Manager{
-		recorders:  make(map[sensor.Type]map[Recorder]bool),
+		recorders:  make(map[sensor.MeasurementType]map[Recorder]bool),
 		mqttClient: mqttClient,
 		closeChan:  make(chan struct{}),
 	}
 }
 
 // AddRecorder adds a recorder for a given sensor type
-func (s *Manager) AddRecorder(sensorType sensor.Type, recorder Recorder) {
+func (s *Manager) AddRecorder(sensorType sensor.MeasurementType, recorder Recorder) {
 	s.recordersMutex.Lock()
 	defer s.recordersMutex.Unlock()
 
@@ -38,7 +38,7 @@ func (s *Manager) AddRecorder(sensorType sensor.Type, recorder Recorder) {
 }
 
 // SubscribeToSensor subscribes to the MQTT topic for a given sensor type
-func (s *Manager) SubscribeToSensor(sensorType sensor.Type, qos byte) error {
+func (s *Manager) SubscribeToSensor(sensorType sensor.MeasurementType, qos byte) error {
 	return s.mqttClient.Subscribe(sensorType.GetTopic(), qos, func(client mqtt.Client, message mqtt.Message) {
 		measurement, err := sensor.FromJSON(message.Payload())
 		if err != nil {
