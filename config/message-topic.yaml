@@ -1,0 +1,21 @@
+root-topic:
+    sensor:
+        humidity: "sensor/humidity"
+        temperature: "sensor/temperature"
+        pressure: "sensor/pressure"
+
+    alert:
+        humidity:
+            end_point: "alert/humidity"
+            lower_bound: 10
+            higher_bound: 90
+
+        temperature:
+            end_point: "alert/temperature"
+            lower_bound: 10
+            higher_bound: 40
+
+        pressure:
+            end_point: "alert/pressure"
+            lower_bound: 0
+            higher_bound: 2

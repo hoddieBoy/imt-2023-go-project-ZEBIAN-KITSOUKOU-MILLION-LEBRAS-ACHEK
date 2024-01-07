@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	if config, err := mqtt_helper.RetrievePropertiesFromConfig("./config/brokerLocalhostConfig.yaml"); err != nil {
+	if config, err := mqtt_helper.RetrieveMQTTPropertiesFromYaml("./config/hiveClientConfig.yaml"); err != nil {
 		panic(err)
 	} else {
 		client := mqtt_helper.NewClient(config, "aClientId")
@@ -22,8 +22,11 @@ func main() {
 			panic(err)
 		}
 
-		if err := client.Publish("test", 1, false, "Hello World"); err != nil {
+		if err := client.Publish("test", 0, false, "Hello World"); err != nil {
 			panic(err)
+		}
+		for true {
+
 		}
 	}
 }

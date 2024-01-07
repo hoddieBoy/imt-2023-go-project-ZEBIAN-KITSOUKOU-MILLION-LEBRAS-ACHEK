@@ -16,7 +16,28 @@ type MQTTConfig struct {
 	} `yaml:"server"`
 }
 
-func RetrievePropertiesFromConfig(filePath string) (*MQTTConfig, error) {
+type SensorAlertType struct {
+	EndPoint    string `yaml:"end_point"`
+	LowerBound  int    `yaml:"lower_bound"`
+	HigherBound int    `yaml:"higher_bound"`
+}
+type MQTTRoot struct {
+	Root struct {
+		Sensor struct {
+			Humidity    string `yaml:"humidity"`
+			Temperature string `yaml:"temperature"`
+			Pressure    string `yaml:"pressure"`
+		} `yaml:"sensor"`
+
+		Alert struct {
+			Humidity    SensorAlertType `yaml:"humidity"`
+			Temperature SensorAlertType `yaml:"temperature"`
+			Pressure    SensorAlertType `yaml:"pressure"`
+		} `yaml:"alert"`
+	} `yaml:"root-topic"`
+}
+
+func RetrieveMQTTPropertiesFromYaml(filePath string) (*MQTTConfig, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("\033[31mfailed to open file:\n\t<<%w>>\033[0m", err)
@@ -35,6 +56,26 @@ func RetrievePropertiesFromConfig(filePath string) (*MQTTConfig, error) {
 
 	if err := cfg.Validate(); err != nil {
 		return nil, fmt.Errorf("\033[31mYAML file is invalid:\n\t<<%w>>\033[0m", err)
+	}
+
+	return &cfg, err
+}
+
+func RetrieveMQTTRootFromYaml() (*MQTTRoot, error) {
+	f, err := os.Open("./config/message-topic.yaml")
+	if err != nil {
+		return nil, fmt.Errorf("\033[31mfailed to open file:\n\t<<%w>>\033[0m", err)
+	}
+	defer func() {
+		if closeErr := f.Close(); closeErr != nil && err == nil {
+			err = closeErr
+		}
+	}()
+
+	var cfg MQTTRoot
+	decoder := yaml.NewDecoder(f)
+	if decoder.Decode(&cfg) != nil {
+		return nil, fmt.Errorf("\033[31mfailed to decode file:\n\t<<%w>>\033[0m", err)
 	}
 
 	return &cfg, err
