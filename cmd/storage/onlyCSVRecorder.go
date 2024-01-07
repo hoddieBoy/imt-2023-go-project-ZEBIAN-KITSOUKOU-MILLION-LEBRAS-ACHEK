@@ -27,7 +27,7 @@ func main() {
 		if csvRecorder, err := storage.NewCSVRecorder("test.csv", csvSettings); err != nil {
 			panic(err)
 		} else {
-			manager.AddRecorder(sensor.Temperature, csvRecorder)
+			manager.AddRecorder(sensor.Temperature, csvRecorder, 1)
 		}
 
 		if influxRecorder, err := storage.NewInfluxDBRecorder(
@@ -40,10 +40,13 @@ func main() {
 			}); err != nil {
 			panic(err)
 		} else {
-			manager.AddRecorder(sensor.Temperature, influxRecorder)
+			manager.AddRecorder(sensor.Temperature, influxRecorder, 1)
 		}
 
-		manager.Start()
+		if err := manager.Start(); err != nil {
+			panic(err)
+		}
+
 		defer func(manager *storage.Manager) {
 			err := manager.Close()
 			if err != nil {
