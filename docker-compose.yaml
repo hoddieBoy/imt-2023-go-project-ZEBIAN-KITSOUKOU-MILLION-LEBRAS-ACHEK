@@ -46,10 +46,6 @@ services:
             interval: 30s
             timeout: 10s
             retries: 5
-        labels:
-            - "traefik.enable=true"
-            - "traefik.http.routers.mosquitto.rule=Host(`mqtt.meteo-airport.localhost`)"
-            - "traefik.http.services.mosquitto.loadbalancer.server.port=1883"
 
     # MQTTX - For MQTT Web Client
     mqtt-web-client:

@@ -17,14 +17,6 @@ func main() {
 		}
 		defer client.Disconnect()
 
-		measurement := &sensor.Measurement{
-			SensorID:  1,
-			AirportID: "NTE",
-			Value:     20.0,
-			Unit:      "°C",
-			Timestamp: time.Now(),
-		}
-
 		manager := storage.NewManager(client)
 		csvSettings := storage.CSVSettings{
 			PathDirectory: "./data",
@@ -39,10 +31,25 @@ func main() {
 		}
 
 		manager.Start()
+		defer func(manager *storage.Manager) {
+			err := manager.Close()
+			if err != nil {
+				panic(err)
+			}
+		}(manager)
 
-		if err := sensor.PublishMeasurement(measurement, "temperature", 1, false, client); err != nil {
+		measurement := sensor.Measurement{
+			SensorID:  1,
+			AirportID: "NTE",
+			Value:     20.0,
+			Unit:      "°C",
+			Timestamp: time.Now(),
+		}
+
+		if err := measurement.PublishOnMQTT(sensor.Temperature, 0, false, client); err != nil {
 			panic(err)
 		}
+
 	}
 
 }

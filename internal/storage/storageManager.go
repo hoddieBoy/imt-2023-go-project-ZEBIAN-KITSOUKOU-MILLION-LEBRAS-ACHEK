@@ -17,7 +17,7 @@ type Manager struct {
 	closeChan      chan struct{}
 }
 
-// NewStorageManager creates a new Manager instance
+// NewManager creates a new Manager instance
 func NewManager(mqttClient *mqtt_helper.MQTTClient) *Manager {
 	return &Manager{
 		recorders:  make(map[sensor.Type]map[Recorder]bool),
