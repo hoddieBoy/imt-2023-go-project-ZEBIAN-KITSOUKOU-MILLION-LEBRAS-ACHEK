@@ -47,22 +47,16 @@ func main() {
 			panic(err)
 		}
 
-		defer func(manager *storage.Manager) {
-			err := manager.Close()
-			if err != nil {
-				panic(err)
-			}
-		}(manager)
-
 		measurement := sensor.Measurement{
 			SensorID:  1,
 			AirportID: "NTE",
-			Value:     21.0,
+			Type:      sensor.Temperature,
+			Value:     20.0,
 			Unit:      "°C",
 			Timestamp: time.Now(),
 		}
 
-		if err := measurement.PublishOnMQTT(sensor.Temperature, 1, false, client); err != nil {
+		if err := measurement.PublishOnMQTT(1, false, client); err != nil {
 			panic(err)
 		}
 

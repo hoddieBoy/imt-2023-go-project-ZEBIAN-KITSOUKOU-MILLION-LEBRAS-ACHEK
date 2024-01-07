@@ -2,16 +2,16 @@ package sensor
 
 import "time"
 
-// Type is the type of the sensor
-type Type string
+// MeasurementType is the type of the sensor
+type MeasurementType string
 
 const (
-	Temperature Type = "temperature"
-	Humidity    Type = "humidity"
-	Pressure    Type = "pressure"
-	WindSpeed   Type = "windSpeed"
+	Temperature MeasurementType = "temperature"
+	Humidity    MeasurementType = "humidity"
+	Pressure    MeasurementType = "pressure"
+	WindSpeed   MeasurementType = "windSpeed"
 )
 
-func (t Type) GetTopic() string {
+func (t MeasurementType) GetTopic() string {
 	return "airport/+/" + time.Now().Format("2006-01-02") + "/" + string(t)
 }

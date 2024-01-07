@@ -12,7 +12,7 @@ import (
 // Manager struct handles subscriptions and manages recorders
 type Manager struct {
 	recordersMutex sync.RWMutex
-	recorders      map[sensor.Type]map[Recorder]byte
+	recorders      map[sensor.MeasurementType]map[Recorder]byte
 	mqttClient     *mqtt_helper.MQTTClient
 	closeChan      chan struct{}
 	wg             sync.WaitGroup
@@ -21,7 +21,7 @@ type Manager struct {
 // NewManager creates a new Manager instance
 func NewManager(mqttClient *mqtt_helper.MQTTClient) *Manager {
 	return &Manager{
-		recorders:  make(map[sensor.Type]map[Recorder]byte),
+		recorders:  make(map[sensor.MeasurementType]map[Recorder]byte),
 		mqttClient: mqttClient,
 		closeChan:  make(chan struct{}),
 		wg:         sync.WaitGroup{},
@@ -29,7 +29,7 @@ func NewManager(mqttClient *mqtt_helper.MQTTClient) *Manager {
 }
 
 // AddRecorder adds a recorder for a given sensor type
-func (s *Manager) AddRecorder(sensorType sensor.Type, recorder Recorder, qos byte) {
+func (s *Manager) AddRecorder(sensorType sensor.MeasurementType, recorder Recorder, qos byte) {
 	s.recordersMutex.Lock()
 	if _, ok := s.recorders[sensorType]; !ok {
 		s.recorders[sensorType] = make(map[Recorder]byte)
@@ -39,7 +39,7 @@ func (s *Manager) AddRecorder(sensorType sensor.Type, recorder Recorder, qos byt
 }
 
 // SubscribeToSensor subscribes to the MQTT topic for a given sensor type
-func (s *Manager) SubscribeToSensor(sensorType sensor.Type, qos byte) error {
+func (s *Manager) SubscribeToSensor(sensorType sensor.MeasurementType, qos byte) error {
 	return s.mqttClient.Subscribe(sensorType.GetTopic(), qos, func(client mqtt.Client, message mqtt.Message) {
 		measurement, err := sensor.FromJSON(message.Payload())
 		if err != nil {
