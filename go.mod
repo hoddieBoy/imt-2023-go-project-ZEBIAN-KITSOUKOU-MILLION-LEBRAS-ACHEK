@@ -4,7 +4,7 @@ go 1.21.4
 
 require (
 	github.com/eclipse/paho.mqtt.golang v1.4.3
-	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (

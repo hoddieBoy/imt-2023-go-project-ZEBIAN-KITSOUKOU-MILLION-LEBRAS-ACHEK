@@ -1,7 +1,7 @@
-# Server configurations
+# Server Configuration
 server:
+    protocol: "tls"
     host: "411d6c045163486b846c891f3910e83f.s2.eu.hivemq.cloud"
     port: 8883
     username: "arduino"
     password: "not4nArduino"
-
