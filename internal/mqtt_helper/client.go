@@ -11,9 +11,7 @@ type MQTTClient struct {
 }
 
 func NewClient(config *MQTTConfig, clientID string) *MQTTClient {
-	brokerAddress := fmt.Sprintf("%s://%s:%d", config.Server.Protocol, config.Server.Host, config.Server.Port)
-
-	opts := mqtt.NewClientOptions().AddBroker(brokerAddress).SetClientID(clientID)
+	opts := mqtt.NewClientOptions().AddBroker(config.GetServerAddress()).SetClientID(clientID)
 
 	if config.Server.Username != "" {
 		opts.SetUsername(config.Server.Username)
@@ -22,6 +20,17 @@ func NewClient(config *MQTTConfig, clientID string) *MQTTClient {
 	if config.Server.Password != "" {
 		opts.SetPassword(config.Server.Password)
 	}
+
+	opts.SetConnectionLostHandler(func(client mqtt.Client, err error) {
+		fmt.Printf("\033[33mconnection lost, trying to reconnect:\n\t<<%s>>\033[0m\n", err)
+		if token := client.Connect(); token.Wait() && token.Error() != nil {
+			fmt.Printf("\033[31mfailed to reconnect:\n\t<<%s>>\033[0m\n", token.Error())
+		}
+	})
+
+	opts.SetOnConnectHandler(func(client mqtt.Client) {
+		fmt.Printf("\033[32mconnection established with broker %s\033[0m\n", config.GetServerAddress())
+	})
 
 	return &MQTTClient{
 		client: mqtt.NewClient(opts),
@@ -38,6 +47,7 @@ func (c *MQTTClient) Connect() error {
 
 func (c *MQTTClient) Disconnect() {
 	c.client.Disconnect(250)
+	fmt.Printf("\033[32mdisconnected from broker %s\033[0m\n", c.config.GetServerAddress())
 }
 
 func (c *MQTTClient) Subscribe(topic string, qos byte, callback mqtt.MessageHandler) error {

@@ -13,6 +13,8 @@ func main() {
 		if err := client.Connect(); err != nil {
 			panic(err)
 		}
+		defer client.Disconnect()
+
 		// Print the message when it is received
 		if err := client.Subscribe("test", 1, func(client mqtt.Client, message mqtt.Message) {
 			println(string(message.Payload()))
@@ -23,6 +25,5 @@ func main() {
 		if err := client.Publish("test", 1, false, "Hello World"); err != nil {
 			panic(err)
 		}
-		client.Disconnect()
 	}
 }
