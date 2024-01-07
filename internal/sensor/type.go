@@ -2,6 +2,7 @@ package sensor
 
 import "time"
 
+// Type is the type of the sensor
 type Type string
 
 const (
