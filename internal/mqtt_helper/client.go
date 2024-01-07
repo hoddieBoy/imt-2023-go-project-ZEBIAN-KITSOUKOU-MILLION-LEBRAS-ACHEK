@@ -1,8 +1,8 @@
 package mqtt_helper
 
 import (
-	"fmt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
 )
 
 type MQTTClient struct {
@@ -22,14 +22,14 @@ func NewClient(config *MQTTConfig, clientID string) *MQTTClient {
 	}
 
 	opts.SetConnectionLostHandler(func(client mqtt.Client, err error) {
-		fmt.Printf("\033[33mconnection lost, trying to reconnect:\n\t<<%s>>\033[0m\n", err)
+		logutil.Warn("connection lost with broker %s", config.GetServerAddress())
 		if token := client.Connect(); token.Wait() && token.Error() != nil {
-			fmt.Printf("\033[31mfailed to reconnect:\n\t<<%s>>\033[0m\n", token.Error())
+			logutil.Error("failed to reconnect to broker %s:\n\t<<%v>>", config.GetServerAddress(), token.Error())
 		}
 	})
 
 	opts.SetOnConnectHandler(func(client mqtt.Client) {
-		fmt.Printf("\033[32mconnection established with broker %s\033[0m\n", config.GetServerAddress())
+		logutil.Info("connected to broker %s", config.GetServerAddress())
 	})
 
 	return &MQTTClient{
@@ -40,19 +40,21 @@ func NewClient(config *MQTTConfig, clientID string) *MQTTClient {
 
 func (c *MQTTClient) Connect() error {
 	if token := c.client.Connect(); token.Wait() && token.Error() != nil {
-		return fmt.Errorf("\033[31mfailed to connect to broker:\n\t<<%w>>\033[0m", token.Error())
+		logutil.Error("failed to connect to broker %s:\n\t<<%v>>", c.config.GetServerAddress(), token.Error())
+		return token.Error()
 	}
 	return nil
 }
 
 func (c *MQTTClient) Disconnect() {
 	c.client.Disconnect(250)
-	fmt.Printf("\033[32mdisconnected from broker %s\033[0m\n", c.config.GetServerAddress())
+	logutil.Info("disconnected from broker %s", c.config.GetServerAddress())
 }
 
 func (c *MQTTClient) Subscribe(topic string, qos byte, callback mqtt.MessageHandler) error {
 	if token := c.client.Subscribe(topic, qos, callback); token.Wait() && token.Error() != nil {
-		return fmt.Errorf("\033[31mfailed to subscribe to topic %s:\n\t<<%w>>\033[0m", topic, token.Error())
+		logutil.Error("failed to subscribe to topic %s:\n\t<<%v>>", topic, token.Error())
+		return token.Error()
 	}
 
 	return nil
@@ -60,14 +62,16 @@ func (c *MQTTClient) Subscribe(topic string, qos byte, callback mqtt.MessageHand
 
 func (c *MQTTClient) Publish(topic string, qos byte, retained bool, payload interface{}) error {
 	if token := c.client.Publish(topic, qos, retained, payload); token.Wait() && token.Error() != nil {
-		return fmt.Errorf("\033[31mfailed to publish to topic %s:\n\t<<%w>>\033[0m", topic, token.Error())
+		logutil.Error("failed to publish to topic %s:\n\t<<%v>>", topic, token.Error())
+		return token.Error()
 	}
 	return nil
 }
 
 func (c *MQTTClient) Unsubscribe(topics ...string) error {
 	if token := c.client.Unsubscribe(topics...); token.Wait() && token.Error() != nil {
-		return fmt.Errorf("failed to unsubscribe from topics %v:\n\t<<%w>>", topics, token.Error())
+		logutil.Error("failed to unsubscribe from topics %v:\n\t<<%v>>", topics, token.Error())
+		return token.Error()
 	}
 	return nil
 }

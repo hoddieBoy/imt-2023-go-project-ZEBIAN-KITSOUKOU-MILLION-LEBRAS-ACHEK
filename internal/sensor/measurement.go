@@ -26,7 +26,7 @@ func (m *Measurement) String() string {
 }
 
 func (m *Measurement) ToJSON() ([]byte, error) {
-	if payload, err := json.Marshal(m); err == nil {
+	if payload, err := json.Marshal(m); err != nil {
 		logutil.Error("Failed to marshal measurement to JSON: %v", err)
 		return nil, err
 	} else {

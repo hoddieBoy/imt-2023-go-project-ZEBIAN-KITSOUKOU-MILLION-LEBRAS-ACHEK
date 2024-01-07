@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-var logger = log.New(os.Stdout, "METEO-AIRPORT", log.LstdFlags|log.Lshortfile)
+var logger = log.New(os.Stdout, "METEO-AIRPORT", log.LstdFlags)
 var formatOutput = "\n\t%s %s\n"
 
 var (
