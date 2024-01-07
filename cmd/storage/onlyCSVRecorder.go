@@ -30,6 +30,19 @@ func main() {
 			manager.AddRecorder(sensor.Temperature, csvRecorder)
 		}
 
+		if influxRecorder, err := storage.NewInfluxDBRecorder(
+			storage.InfluxDBSettings{
+				URL:          "http://localhost:8086",
+				Token:        "gRGYqt6oxFui_8TBpMjkT7Vfq2XAz2wL48ldxzYHp-cADW14GmN0dYYIMxtqDBcZIgk5YdgvZn_rrEzHhjYw1w==",
+				Bucket:       "metrics",
+				Organization: "meteo-airport",
+				Measurement:  "temperature",
+			}); err != nil {
+			panic(err)
+		} else {
+			manager.AddRecorder(sensor.Temperature, influxRecorder)
+		}
+
 		manager.Start()
 		defer func(manager *storage.Manager) {
 			err := manager.Close()
@@ -41,12 +54,12 @@ func main() {
 		measurement := sensor.Measurement{
 			SensorID:  1,
 			AirportID: "NTE",
-			Value:     20.0,
+			Value:     21.0,
 			Unit:      "°C",
 			Timestamp: time.Now(),
 		}
 
-		if err := measurement.PublishOnMQTT(sensor.Temperature, 0, false, client); err != nil {
+		if err := measurement.PublishOnMQTT(sensor.Temperature, 1, false, client); err != nil {
 			panic(err)
 		}
 
