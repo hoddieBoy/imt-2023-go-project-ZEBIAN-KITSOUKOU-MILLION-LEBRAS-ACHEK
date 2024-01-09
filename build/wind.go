@@ -41,7 +41,7 @@ func main() {
 			if err != nil {
 				fmt.Printf("could not marshal json: %s\n", err)
 			} else {
-				client.Publish("capteur/W", 2, false, jsonData)
+				client.Publish("sensor/wind", 2, false, jsonData)
 				fmt.Printf("%#v", data)
 			}
 
