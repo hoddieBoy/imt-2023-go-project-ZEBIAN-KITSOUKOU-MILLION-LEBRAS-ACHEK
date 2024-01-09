@@ -22,8 +22,13 @@ func main() {
 		max := 120.0
 
 		for {
-			actualWind = min + rand.Float64()*(max-min)
-
+			actualWind = actualWind + (rand.Float64()-rand.Float64())*5
+			if actualWind < min {
+				actualWind = min
+			}
+			if actualWind > max {
+				actualWind = max
+			}
 			data := sensor.Measurement{
 				SensorID:  2,
 				AirportID: "CDG",
@@ -37,10 +42,10 @@ func main() {
 				fmt.Printf("could not marshal json: %s\n", err)
 			} else {
 				client.Publish("capteur/W", 2, false, jsonData)
-				fmt.Printf("%d", jsonData)
+				fmt.Printf("%#v", data)
 			}
 
-			time.Sleep(5000)
+			time.Sleep(2 * time.Second)
 		}
 	}
 }
