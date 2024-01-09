@@ -1,0 +1,5 @@
+http:
+    routers:
+        traefik:
+            rule: "Host(`traefik.app.localhost`)"
+            service: "api@internal"
