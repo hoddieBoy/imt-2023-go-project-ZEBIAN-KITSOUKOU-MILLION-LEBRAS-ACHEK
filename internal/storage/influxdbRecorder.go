@@ -10,11 +10,10 @@ import (
 )
 
 type InfluxDBRecorder struct {
-	mu          sync.Mutex
-	client      influxdb2.Client
-	bucket      string
-	org         string
-	measurement string
+	mu     sync.Mutex
+	client influxdb2.Client
+	bucket string
+	org    string
 }
 
 type InfluxDBSettings struct {
@@ -22,17 +21,15 @@ type InfluxDBSettings struct {
 	Token        string
 	Bucket       string
 	Organization string
-	Measurement  string
 }
 
 func NewInfluxDBRecorder(settings InfluxDBSettings) (*InfluxDBRecorder, error) {
 	client := influxdb2.NewClient(settings.URL, settings.Token)
 	return &InfluxDBRecorder{
-		mu:          sync.Mutex{},
-		client:      client,
-		bucket:      settings.Bucket,
-		org:         settings.Organization,
-		measurement: settings.Measurement,
+		mu:     sync.Mutex{},
+		client: client,
+		bucket: settings.Bucket,
+		org:    settings.Organization,
 	}, nil
 }
 
@@ -42,16 +39,11 @@ func (r *InfluxDBRecorder) RecordOnContext(ctx context.Context, m *sensor.Measur
 
 	writeAPI := r.client.WriteAPIBlocking(r.org, r.bucket)
 
-	p := influxdb2.NewPoint(r.measurement,
-		map[string]string{
-			"sensor_id":  strconv.Itoa(int(m.SensorID)),
-			"airport_id": m.AirportID,
-			"unit":       m.Unit,
-		},
-		map[string]interface{}{
-			"value": m.Value,
-		},
-		m.Timestamp)
+	p := influxdb2.NewPointWithMeasurement(string(m.Type)).
+		AddTag("airport", m.AirportID).
+		AddTag("sensor", strconv.FormatInt(m.SensorID, 10)).
+		AddField("value", m.Value).
+		SetTime(m.Timestamp)
 
 	if err := writeAPI.WritePoint(ctx, p); err != nil {
 		logutil.Error("Failed to write point: %v", err)

@@ -33,10 +33,9 @@ func main() {
 		if influxRecorder, err := storage.NewInfluxDBRecorder(
 			storage.InfluxDBSettings{
 				URL:          "http://localhost:8086",
-				Token:        "gRGYqt6oxFui_8TBpMjkT7Vfq2XAz2wL48ldxzYHp-cADW14GmN0dYYIMxtqDBcZIgk5YdgvZn_rrEzHhjYw1w==",
+				Token:        "oovEfiXEVMcbEFEmy9jNNKUnWvlBexVmvSH6Ohr8f5b201RHNx5nb4D_5Y4o6mhwUWx--sV018H0ZLf6zDaD8Q==",
 				Bucket:       "metrics",
 				Organization: "meteo-airport",
-				Measurement:  "temperature",
 			}); err != nil {
 			panic(err)
 		} else {
@@ -51,7 +50,7 @@ func main() {
 			SensorID:  1,
 			AirportID: "NTE",
 			Type:      sensor.Temperature,
-			Value:     20.0,
+			Value:     40.0,
 			Unit:      "°C",
 			Timestamp: time.Now(),
 		}
