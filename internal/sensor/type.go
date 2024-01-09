@@ -2,7 +2,6 @@ package sensor
 
 import "time"
 
-// MeasurementType is the type of the sensor
 type MeasurementType string
 
 const (

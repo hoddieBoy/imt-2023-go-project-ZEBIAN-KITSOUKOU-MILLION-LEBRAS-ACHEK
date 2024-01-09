@@ -17,13 +17,11 @@ type CSVRecorder struct {
 }
 
 type CSVSettings struct {
-	// Path is the path to the CSV file
 	PathDirectory string
 	Separator     rune
 	TimeFormat    string
 }
 
-// NewCSVRecorder creates a new CSVRecorder with the given settings
 func NewCSVRecorder(filename string, settings CSVSettings) (*CSVRecorder, error) {
 	file, err := os.OpenFile(filepath.Join(settings.PathDirectory, filename), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -51,7 +49,6 @@ func NewCSVRecorder(filename string, settings CSVSettings) (*CSVRecorder, error)
 	}, nil
 }
 
-// Record stores a measurement
 func (r *CSVRecorder) Record(m *sensor.Measurement) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -68,7 +65,6 @@ func (r *CSVRecorder) Record(m *sensor.Measurement) error {
 	return r.writer.Error()
 }
 
-// Close closes the recorder
 func (r *CSVRecorder) Close() error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
