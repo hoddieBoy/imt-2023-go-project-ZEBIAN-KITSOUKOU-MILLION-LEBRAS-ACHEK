@@ -42,17 +42,11 @@ services:
         restart: unless-stopped
         ports:
             - "1883:1883"
-            - "9001:9001"
-            - "8883:8883"
         healthcheck:
-            test: ["CMD", "mosquitto_pub", "-h", "localhost", "-t", "test", "-m", "test", "-u", "admin", "-P", "anotherSecretPassword"]
+            test: [ "CMD", "mosquitto_pub", "-h", "localhost", "-t", "test", "-m", "test", "-u", "${MQTT_USER}", "-P", "${MQTT_PASSWORD}" ]
             interval: 30s
             timeout: 10s
             retries: 5
-        labels:
-            - "traefik.enable=true"
-            - "traefik.http.routers.mosquitto.rule=Host(`mqtt.meteo-airport.localhost`)"
-            - "traefik.http.services.mosquitto.loadbalancer.server.port=9001"
 
     # MQTTX - For MQTT Web Client
     mqtt-web-client:
