@@ -26,12 +26,13 @@ func (m *Measurement) String() string {
 }
 
 func (m *Measurement) ToJSON() ([]byte, error) {
-	if payload, err := json.Marshal(m); err != nil {
+	payload, err := json.Marshal(m)
+	if err != nil {
 		logutil.Error("Failed to marshal measurement to JSON: %v", err)
 		return nil, err
-	} else {
-		return payload, nil
 	}
+
+	return payload, nil
 }
 
 func FromJSON(payload []byte) (*Measurement, error) {

@@ -17,7 +17,6 @@ type Manager struct {
 	closeChan      chan struct{}
 }
 
-// NewManager creates a new Manager instance
 func NewManager(mqttClient *mqtt_helper.MQTTClient) *Manager {
 	return &Manager{
 		recorders:  make(map[sensor.MeasurementType]map[Recorder]bool),
@@ -26,7 +25,6 @@ func NewManager(mqttClient *mqtt_helper.MQTTClient) *Manager {
 	}
 }
 
-// AddRecorder adds a recorder for a given sensor type
 func (s *Manager) AddRecorder(sensorType sensor.MeasurementType, recorder Recorder) {
 	s.recordersMutex.Lock()
 	defer s.recordersMutex.Unlock()
@@ -37,7 +35,6 @@ func (s *Manager) AddRecorder(sensorType sensor.MeasurementType, recorder Record
 	s.recorders[sensorType][recorder] = true
 }
 
-// SubscribeToSensor subscribes to the MQTT topic for a given sensor type
 func (s *Manager) SubscribeToSensor(sensorType sensor.MeasurementType, qos byte) error {
 	return s.mqttClient.Subscribe(sensorType.GetTopic(), qos, func(client mqtt.Client, message mqtt.Message) {
 		measurement, err := sensor.FromJSON(message.Payload())
@@ -59,7 +56,6 @@ func (s *Manager) SubscribeToSensor(sensorType sensor.MeasurementType, qos byte)
 	})
 }
 
-// Close closes all recorders
 func (s *Manager) Close() error {
 	close(s.closeChan)
 
@@ -82,7 +78,6 @@ func (s *Manager) Close() error {
 	return nil
 }
 
-// Start starts subscriptions for all recorders
 func (s *Manager) Start() {
 	s.recordersMutex.RLock()
 	defer s.recordersMutex.RUnlock()
