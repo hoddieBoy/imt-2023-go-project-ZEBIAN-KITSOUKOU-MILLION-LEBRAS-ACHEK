@@ -64,7 +64,7 @@ func makeDefaultClient() mqtt.Client {
 	return client
 }
 
-func subscribeWithQos_1(client mqtt.Client, topic string) {
+func SubscribeWithQos_1(client mqtt.Client, topic string) {
 	token := client.Subscribe(topic, 1, nil)
 
 	token.Wait()
