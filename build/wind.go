@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 	"math/rand"
@@ -36,16 +35,11 @@ func main() {
 				Value:     actualWind,
 				Timestamp: time.Now(),
 			}
-			jsonData, err := json.Marshal(data)
 
-			if err != nil {
-				fmt.Printf("could not marshal json: %s\n", err)
-			} else {
-				client.Publish("sensor/wind", 2, false, jsonData)
-				fmt.Printf("%#v", data)
-			}
+			data.PublishOnMQTT(2, false, client)
+			fmt.Printf("%#v", data)
 
-			time.Sleep(2 * time.Second)
+			time.Sleep(5 * time.Second)
 		}
 	}
 }
