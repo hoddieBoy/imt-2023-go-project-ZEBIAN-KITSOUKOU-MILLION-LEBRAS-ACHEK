@@ -13,7 +13,7 @@ type Config struct {
 }
 
 func retrievePropertiesFromConfig() *Config {
-	f, err := os.Open("serverConfigType.yml")
+	f, err := os.Open("internal/brokerConfig.yml")
 	if err != nil {
 		return nil
 	}

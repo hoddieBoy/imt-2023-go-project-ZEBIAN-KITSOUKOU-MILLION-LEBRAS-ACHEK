@@ -11,7 +11,7 @@ import (
 
 func main() {
 	client := internal.MakeDefaultClient()
-	// MQTT broker configuration
+	//internal.SubscribeWithQos_1(client, "capteur/W")
 
 	actualWind := 40
 	min := 10
@@ -22,7 +22,7 @@ func main() {
 		idAirport string
 		mesure    string
 		value     int
-		timestamp time.Time
+		timestamp string
 	}
 
 	for {
@@ -33,7 +33,7 @@ func main() {
 			idAirport: "CDG",
 			mesure:    "Wind speed",
 			value:     actualWind,
-			timestamp: time.Now(),
+			timestamp: time.Now().Format("2006-01-02-15-04-05"),
 		}
 		jsonData, err := json.Marshal(data)
 
@@ -41,9 +41,9 @@ func main() {
 			fmt.Printf("could not marshal json: %s\n", err)
 		} else {
 			internal.Publish(client, fmt.Sprintf("%.2f", jsonData), "capteur/W")
-			fmt.Printf("data send")
+			fmt.Printf("%d", jsonData)
 		}
 
-		time.Sleep(5)
+		time.Sleep(5000)
 	}
 }
