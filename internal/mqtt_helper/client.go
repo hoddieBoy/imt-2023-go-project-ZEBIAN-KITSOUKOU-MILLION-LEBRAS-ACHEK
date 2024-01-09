@@ -61,7 +61,8 @@ func (c *MQTTClient) Subscribe(topic string, qos byte, callback mqtt.MessageHand
 }
 
 func (c *MQTTClient) Publish(topic string, qos byte, retained bool, payload interface{}) error {
-	if token := c.client.Publish(topic, qos, retained, payload); token.Wait() && token.Error() != nil {
+	token := c.client.Publish(topic, qos, retained, payload)
+	if token.Wait() && token.Error() != nil {
 		logutil.Error("failed to publish to topic %s:\n\t<<%v>>", topic, token.Error())
 		return token.Error()
 	}
