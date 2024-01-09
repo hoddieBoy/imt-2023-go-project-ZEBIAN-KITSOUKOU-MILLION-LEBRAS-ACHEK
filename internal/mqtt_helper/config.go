@@ -2,6 +2,7 @@ package mqtt_helper
 
 import (
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
 	"os"
 )
