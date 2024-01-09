@@ -18,7 +18,6 @@ type Manager struct {
 	wg             sync.WaitGroup
 }
 
-// NewManager creates a new Manager instance
 func NewManager(mqttClient *mqtt_helper.MQTTClient) *Manager {
 	return &Manager{
 		recorders:  make(map[sensor.MeasurementType]map[Recorder]byte),
@@ -28,7 +27,6 @@ func NewManager(mqttClient *mqtt_helper.MQTTClient) *Manager {
 	}
 }
 
-// AddRecorder adds a recorder for a given sensor type
 func (s *Manager) AddRecorder(sensorType sensor.MeasurementType, recorder Recorder, qos byte) {
 	s.recordersMutex.Lock()
 	if _, ok := s.recorders[sensorType]; !ok {
@@ -38,7 +36,6 @@ func (s *Manager) AddRecorder(sensorType sensor.MeasurementType, recorder Record
 	s.recordersMutex.Unlock()
 }
 
-// SubscribeToSensor subscribes to the MQTT topic for a given sensor type
 func (s *Manager) SubscribeToSensor(sensorType sensor.MeasurementType, qos byte) error {
 	return s.mqttClient.Subscribe(sensorType.GetTopic(), qos, func(client mqtt.Client, message mqtt.Message) {
 		measurement, err := sensor.FromJSON(message.Payload())
@@ -62,7 +59,6 @@ func (s *Manager) SubscribeToSensor(sensorType sensor.MeasurementType, qos byte)
 	})
 }
 
-// Close closes all recorders
 func (s *Manager) Close() error {
 	close(s.closeChan)
 
@@ -87,7 +83,6 @@ func (s *Manager) Close() error {
 	return nil
 }
 
-// Start starts subscriptions for all recorders
 func (s *Manager) Start() error {
 	s.recordersMutex.RLock()
 	defer s.recordersMutex.RUnlock()
