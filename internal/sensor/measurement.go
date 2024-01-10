@@ -61,7 +61,7 @@ func MeasurementFieldNames(separator rune) string {
 // PublishOnMQTT publishes a measurement to the MQTT broker
 func (m *Measurement) PublishOnMQTT(qos byte, retained bool, client *mqtt_helper.MQTTClient) error {
 	// Topic: airport/<airport_id>/<year-month-day>/<type_of_measurement>
-	topic := fmt.Sprintf("airport/%s/%s/%s", m.AirportID, m.Timestamp.Format("2006-01-02"), m.Type)
+	topic := fmt.Sprintf("airport/%s/%s", m.AirportID, m.Type)
 	payload, err := m.ToJSON()
 	if err != nil {
 		logutil.Error(fmt.Sprintf("Failed to marshal measurement to JSON: %v", err))

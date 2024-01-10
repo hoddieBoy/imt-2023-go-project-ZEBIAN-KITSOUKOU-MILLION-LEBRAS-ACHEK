@@ -5,7 +5,6 @@ go 1.21.4
 require (
 	github.com/eclipse/paho.mqtt.golang v1.4.3
 	github.com/fatih/color v1.16.0
-	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -15,4 +14,5 @@ require (
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

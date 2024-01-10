@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
 	"os"
+	"gopkg.in/yaml.v3"
 )
 
 type MQTTConfig struct {
