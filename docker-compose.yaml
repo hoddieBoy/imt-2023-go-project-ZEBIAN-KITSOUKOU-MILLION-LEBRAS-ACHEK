@@ -24,7 +24,7 @@ services:
             - "traefik.http.routers.influxdb.rule=Host(`influxdb.metrics.meteo-airport.localhost`)"
             - "traefik.http.services.influxdb.loadbalancer.server.port=8086"
         healthcheck:
-            test: ["CMD", "curl", "-f", "http://localhost:8086/ping"]
+          test: [ "CMD", "curl", "-f", "http://localhost:8086/ping" ]
             interval: 30s
             timeout: 10s
             retries: 5

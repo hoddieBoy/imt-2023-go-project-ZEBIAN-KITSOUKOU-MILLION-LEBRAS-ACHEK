@@ -2,7 +2,9 @@
 
 ## Commit Convention
 
-This project follows the commit convention to standardize commit messages. We adhere to the [Conventional Commit specification](https://www.conventionalcommits.org) to ensure clear and consistent semantics in our commit messages.
+This project follows the commit convention to standardize commit messages. We adhere to
+the [Conventional Commit specification](https://www.conventionalcommits.org) to ensure clear and consistent semantics in
+our commit messages.
 
 ### Commit Types
 
@@ -59,6 +61,7 @@ To maintain a clear and consistent branch structure, please follow the conventio
 
 ## Submitting a Pull Request
 
-Before submitting a Pull Request, ensure that your commits follow the Conventional Commit convention, and your branch name adheres to the branch naming convention.
+Before submitting a Pull Request, ensure that your commits follow the Conventional Commit convention, and your branch
+name adheres to the branch naming convention.
 
 This facilitates understanding of the changes made and expedites the review process.

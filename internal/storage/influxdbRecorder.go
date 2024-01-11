@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"github.com/influxdata/influxdb-client-go/v2"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/config_helper"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 	"strconv"
@@ -16,14 +17,7 @@ type InfluxDBRecorder struct {
 	org    string
 }
 
-type InfluxDBSettings struct {
-	URL          string
-	Token        string
-	Bucket       string
-	Organization string
-}
-
-func NewInfluxDBRecorder(settings InfluxDBSettings) (*InfluxDBRecorder, error) {
+func NewInfluxDBRecorder(settings config_helper.InfluxDBSettings) (*InfluxDBRecorder, error) {
 	client := influxdb2.NewClient(settings.URL, settings.Token)
 	return &InfluxDBRecorder{
 		mu:     sync.Mutex{},
