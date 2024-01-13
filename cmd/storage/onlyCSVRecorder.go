@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	if config, err := mqtt_helper.RetrievePropertiesFromConfig("./config/brokerLocalhostConfig.yaml"); err != nil {
+	if config, err := mqtt_helper.RetrieveMQTTPropertiesFromYaml("./config/brokerLocalhostConfig.yaml"); err != nil {
 		panic(err)
 	} else {
 		client := mqtt_helper.NewClient(config, "aClientId")
