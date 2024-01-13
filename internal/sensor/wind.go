@@ -1,9 +1,8 @@
-package main
+package sensor
 
 import (
 	"fmt"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 	"math/rand"
 	"time"
 
@@ -25,7 +24,7 @@ func windDataGeneration(actualWind float64, min float64, max float64) float64 {
 
 func publishData(actualWind float64, client *mqtt_helper.MQTTClient) {
 
-	data := sensor.Measurement{
+	data := Measurement{
 		SensorID:  2,
 		AirportID: "CDG",
 		Type:      "Wind speed",
