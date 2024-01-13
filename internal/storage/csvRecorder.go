@@ -2,11 +2,12 @@ package storage
 
 import (
 	"encoding/csv"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 	"os"
 	"path/filepath"
 	"sync"
+
+	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 
 type CSVRecorder struct {
@@ -25,7 +26,7 @@ type CSVSettings struct {
 func NewCSVRecorder(filename string, settings CSVSettings) (*CSVRecorder, error) {
 	file, err := os.OpenFile(filepath.Join(settings.PathDirectory, filename), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		logutil.Error("Failed to open file: %v", err)
+		log.Error("Failed to open file: %v", err)
 		return nil, err
 	}
 
@@ -34,7 +35,7 @@ func NewCSVRecorder(filename string, settings CSVSettings) (*CSVRecorder, error)
 	// Write field names in the first line if we are creating a new file
 	if info, err := file.Stat(); err == nil && info.Size() == 0 {
 		if err := writer.Write([]string{sensor.MeasurementFieldNames(settings.Separator)}); err != nil {
-			logutil.Error("Failed to write field names: %v", err)
+			log.Error("Failed to write field names: %v", err)
 			return nil, err
 		}
 
@@ -56,7 +57,7 @@ func (r *CSVRecorder) Record(m *sensor.Measurement) error {
 	record := m.ToCSV(r.Settings.Separator, r.Settings.TimeFormat)
 
 	if err := r.writer.Write([]string{record}); err != nil {
-		logutil.Error("Failed to write record: %v", err)
+		log.Error("Failed to write record: %v", err)
 		return err
 	}
 
@@ -73,13 +74,13 @@ func (r *CSVRecorder) Close() error {
 		r.writer.Flush()
 
 		if err := r.writer.Error(); err != nil {
-			logutil.Error("Failed to flush writer: %v", err)
+			log.Error("Failed to flush writer: %v", err)
 			return err
 		}
 	}
 
 	if err := r.file.Close(); err != nil {
-		logutil.Error("Failed to close file: %v", err)
+		log.Error("Failed to close file: %v", err)
 		return err
 	}
 

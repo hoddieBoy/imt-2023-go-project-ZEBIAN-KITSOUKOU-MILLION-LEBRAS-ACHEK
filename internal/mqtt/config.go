@@ -1,12 +1,14 @@
-package mqtt_helper
+package mqtt
 
 import (
 	"fmt"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
 	"os"
+
+	"gopkg.in/yaml.v3"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 )
 
-type MQTTConfig struct {
+type Config struct {
 	Server struct {
 		Protocol string `yaml:"protocol"`
 		Port     int    `yaml:"port"`
@@ -21,7 +23,7 @@ type SensorAlertType struct {
 	LowerBound  int    `yaml:"lower_bound"`
 	HigherBound int    `yaml:"higher_bound"`
 }
-type MQTTRoot struct {
+type Root struct {
 	Root struct {
 		Sensor struct {
 			Humidity    string `yaml:"humidity"`
@@ -37,46 +39,52 @@ type MQTTRoot struct {
 	} `yaml:"root-topic"`
 }
 
-func RetrieveMQTTPropertiesFromYaml(filePath string) (*MQTTConfig, error) {
+func RetrieveMQTTPropertiesFromYaml(filePath string) (*Config, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
-		logutil.Error("Failed to open file:\n\t << %v >>", err)
+		log.Error("Failed to open file:\n\t << %v >>", err)
 		return nil, err
 	}
+
 	defer func() {
 		if closeErr := f.Close(); closeErr != nil && err == nil {
 			err = closeErr
 		}
 	}()
 
-	var cfg MQTTConfig
+	var cfg Config
+
 	decoder := yaml.NewDecoder(f)
+
 	if decoder.Decode(&cfg) != nil {
-		logutil.Error("Failed to decode file: << %v >>", err)
+		log.Error("Failed to decode file: << %v >>", err)
 		return nil, err
 	}
 
-	if err := cfg.Validate(); err != nil {
-		logutil.Error("Failed to validate config: << %v >>", err)
+	if validationErr := cfg.Validate(); validationErr != nil {
+		log.Error("Failed to validate config: << %v >>", validationErr)
 		return nil, err
 	}
 
 	return &cfg, err
 }
 
-func RetrieveMQTTRootFromYaml() (*MQTTRoot, error) {
+func RetrieveMQTTRootFromYaml() (*Root, error) {
 	f, err := os.Open("./config/message-topic.yaml")
 	if err != nil {
 		return nil, fmt.Errorf("\033[31mfailed to open file:\n\t<<%w>>\033[0m", err)
 	}
+
 	defer func() {
 		if closeErr := f.Close(); closeErr != nil && err == nil {
 			err = closeErr
 		}
 	}()
 
-	var cfg MQTTRoot
+	var cfg Root
+
 	decoder := yaml.NewDecoder(f)
+
 	if decoder.Decode(&cfg) != nil {
 		return nil, fmt.Errorf("\033[31mfailed to decode file:\n\t<<%w>>\033[0m", err)
 	}
@@ -84,11 +92,11 @@ func RetrieveMQTTRootFromYaml() (*MQTTRoot, error) {
 	return &cfg, err
 }
 
-func (c *MQTTConfig) GetServerAddress() string {
+func (c *Config) GetServerAddress() string {
 	return fmt.Sprintf("%s://%s:%d", c.Server.Protocol, c.Server.Host, c.Server.Port)
 }
 
-func (c *MQTTConfig) Validate() error {
+func (c *Config) Validate() error {
 	if c.Server.Host == "" {
 		return fmt.Errorf("host is empty")
 	}
