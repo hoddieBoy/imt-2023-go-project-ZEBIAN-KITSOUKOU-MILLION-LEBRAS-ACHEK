@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt_helper"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -44,11 +46,15 @@ func FromJSON(payload []byte) (*Measurement, error) {
 	return &measurement, nil
 }
 
-func (m *Measurement) ToCSV(separator rune, timeFormat string) string {
-	return fmt.Sprintf(
-		"%d%c%s%c%s%c%f%c%s%c%s",
-		m.SensorID, separator, m.AirportID, separator, m.Type, separator, m.Value, separator, m.Unit, separator, m.Timestamp.Format(timeFormat),
-	)
+func (m *Measurement) MeasurementValuesToCSV(separator rune, timeFormat string) string {
+	data := []string{strconv.FormatInt(m.SensorID, 10),
+		m.AirportID,
+		string(m.Type),
+		strconv.FormatFloat(m.Value, 'f', -1, 64),
+		m.Unit,
+		m.Timestamp.Format(timeFormat),
+	}
+	return strings.Join(data, strconv.QuoteRune(separator))
 }
 
 func MeasurementFieldNames(separator rune) string {
