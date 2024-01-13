@@ -1,12 +1,8 @@
 linters-settings:
     govet:
         check-shadowing: true
-    golint:
-        min-confidence: 0.8
     gocyclo:
         min-complexity: 10
-    maligned:
-        suggest-new: true
     dupl:
         threshold: 100
     goconst:
@@ -18,14 +14,12 @@ linters-settings:
 linters:
     disable-all: true
     enable:
-        - deadcode
         - govet
         - gocyclo
-        - golint
+        - revive
         - unused
         - gosimple
-        - structcheck
-        - varcheck
+        - unused
         - ineffassign
         - errcheck
         - staticcheck
@@ -36,10 +30,10 @@ linters:
         - unparam
         - nakedret
         - prealloc
-        - scopelint
+        - exportloopref
         - gocritic
         - gosec
-        - maligned
+        - fieldalignment
         - dupl
         - funlen
         - whitespace
