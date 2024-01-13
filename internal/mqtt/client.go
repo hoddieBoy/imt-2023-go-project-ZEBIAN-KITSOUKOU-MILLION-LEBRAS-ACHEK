@@ -5,12 +5,12 @@ import (
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 )
 
-type MQTTClient struct {
+type Client struct {
 	client mqtt.Client
-	config *MQTTConfig
+	config *Config
 }
 
-func NewClient(config *MQTTConfig, clientID string) *MQTTClient {
+func NewClient(config *Config, clientID string) *Client {
 	opts := mqtt.NewClientOptions().AddBroker(config.GetServerAddress()).SetClientID(clientID)
 
 	if config.Server.Username != "" {
@@ -32,26 +32,27 @@ func NewClient(config *MQTTConfig, clientID string) *MQTTClient {
 		log.Info("connected to broker %s", config.GetServerAddress())
 	})
 
-	return &MQTTClient{
+	return &Client{
 		client: mqtt.NewClient(opts),
 		config: config,
 	}
 }
 
-func (c *MQTTClient) Connect() error {
+func (c *Client) Connect() error {
 	if token := c.client.Connect(); token.Wait() && token.Error() != nil {
 		log.Error("failed to connect to broker %s:\n\t<<%v>>", c.config.GetServerAddress(), token.Error())
 		return token.Error()
 	}
+
 	return nil
 }
 
-func (c *MQTTClient) Disconnect() {
+func (c *Client) Disconnect() {
 	c.client.Disconnect(250)
 	log.Info("disconnected from broker %s", c.config.GetServerAddress())
 }
 
-func (c *MQTTClient) Subscribe(topic string, qos byte, callback mqtt.MessageHandler) error {
+func (c *Client) Subscribe(topic string, qos byte, callback mqtt.MessageHandler) error {
 	if token := c.client.Subscribe(topic, qos, callback); token.Wait() && token.Error() != nil {
 		log.Error("failed to subscribe to topic %s:\n\t<<%v>>", topic, token.Error())
 		return token.Error()
@@ -60,19 +61,21 @@ func (c *MQTTClient) Subscribe(topic string, qos byte, callback mqtt.MessageHand
 	return nil
 }
 
-func (c *MQTTClient) Publish(topic string, qos byte, retained bool, payload interface{}) error {
+func (c *Client) Publish(topic string, qos byte, retained bool, payload interface{}) error {
 	token := c.client.Publish(topic, qos, retained, payload)
 	if token.Wait() && token.Error() != nil {
 		log.Error("failed to publish to topic %s:\n\t<<%v>>", topic, token.Error())
 		return token.Error()
 	}
+
 	return nil
 }
 
-func (c *MQTTClient) Unsubscribe(topics ...string) error {
+func (c *Client) Unsubscribe(topics ...string) error {
 	if token := c.client.Unsubscribe(topics...); token.Wait() && token.Error() != nil {
 		log.Error("failed to unsubscribe from topics %v:\n\t<<%v>>", topics, token.Error())
 		return token.Error()
 	}
+
 	return nil
 }

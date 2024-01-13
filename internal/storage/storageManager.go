@@ -2,22 +2,23 @@ package storage
 
 import (
 	"fmt"
+	"sync"
+
 	pahoMqtt "github.com/eclipse/paho.mqtt.golang"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
-	"sync"
 )
 
 // Manager handles subscriptions and manages recorders
 type Manager struct {
 	recordersMutex sync.RWMutex
 	recorders      map[sensor.MeasurementType]map[Recorder]bool
-	mqttClient     *mqtt.MQTTClient
+	mqttClient     *mqtt.Client
 	closeChan      chan struct{}
 }
 
-func NewManager(mqttClient *mqtt.MQTTClient) *Manager {
+func NewManager(mqttClient *mqtt.Client) *Manager {
 	return &Manager{
 		recorders:  make(map[sensor.MeasurementType]map[Recorder]bool),
 		mqttClient: mqttClient,
@@ -32,6 +33,7 @@ func (s *Manager) AddRecorder(sensorType sensor.MeasurementType, recorder Record
 	if _, ok := s.recorders[sensorType]; !ok {
 		s.recorders[sensorType] = make(map[Recorder]bool)
 	}
+
 	s.recorders[sensorType][recorder] = true
 }
 
@@ -75,6 +77,7 @@ func (s *Manager) Close() error {
 	if len(closeErrors) > 0 {
 		return fmt.Errorf("encountered errors while closing recorders: %v", closeErrors)
 	}
+
 	return nil
 }
 

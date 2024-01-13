@@ -2,11 +2,12 @@ package storage
 
 import (
 	"encoding/csv"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 	"os"
 	"path/filepath"
 	"sync"
+
+	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 
 type CSVRecorder struct {

@@ -2,10 +2,11 @@ package log
 
 import (
 	"fmt"
-	"github.com/fatih/color"
 	"log"
 	"os"
 	"runtime"
+
+	"github.com/fatih/color"
 )
 
 var logger = log.New(os.Stdout, "METEO-AIRPORT", log.LstdFlags)
@@ -23,6 +24,7 @@ func logMessage(message, level string) string {
 	if ok && (level == red(bold("[Error] ")) || level == yellow(bold("[Warn] "))) {
 		return fmt.Sprintf("\n\t%s%s:%d %s%s", level, file, line, message, reset())
 	}
+
 	return fmt.Sprintf("\n\t%s%s%s", level, message, reset())
 }
 

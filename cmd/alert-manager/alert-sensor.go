@@ -2,27 +2,30 @@ package main
 
 import (
 	"fmt"
+
 	pahoMqtt "github.com/eclipse/paho.mqtt.golang"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
 )
 
 func main() {
-	if config, err := mqtt.RetrieveMQTTPropertiesFromYaml("./config/hiveClientConfig.yaml"); err != nil {
+	config, err := mqtt.RetrieveMQTTPropertiesFromYaml("./config/hiveClientConfig.yaml")
+	if err != nil {
 		panic(err)
-	} else {
-		client := mqtt.NewClient(config, "anotherClientId")
-		if err := client.Connect(); err != nil {
-			panic(err)
-		}
-		defer client.Disconnect()
-
-		handleAlertListening(client)
-
-		select {}
 	}
+
+	client := mqtt.NewClient(config, "anotherClientId")
+	if err := client.Connect(); err != nil {
+		panic(err)
+	}
+
+	defer client.Disconnect()
+
+	handleAlertListening(client)
+
+	select {}
 }
 
-func handleAlertListening(client *mqtt.MQTTClient) {
+func handleAlertListening(client *mqtt.Client) {
 	rootConfig, err := mqtt.RetrieveMQTTRootFromYaml()
 	if err != nil {
 		panic(err)
@@ -56,9 +59,13 @@ func handleAlertListening(client *mqtt.MQTTClient) {
 	}
 }
 
-func checkValidRangeOnReception(helperClient *mqtt.MQTTClient, sensorAlert mqtt.SensorAlertType, alertMessage string) pahoMqtt.MessageHandler {
+func checkValidRangeOnReception(
+	helperClient *mqtt.Client,
+	sensorAlert mqtt.SensorAlertType,
+	alertMessage string,
+) pahoMqtt.MessageHandler {
 	return func(mqttClient pahoMqtt.Client, message pahoMqtt.Message) {
-		sensorValue := getJsonValueAsIntFromMessage(message)
+		sensorValue := getJSONValueAsIntFromMessage(message)
 		if !(sensorAlert.LowerBound <= sensorValue && sensorValue <= sensorAlert.HigherBound) {
 			err := helperClient.Publish(sensorAlert.EndPoint, 1, false, alertMessage)
 			if err != nil {
@@ -68,7 +75,7 @@ func checkValidRangeOnReception(helperClient *mqtt.MQTTClient, sensorAlert mqtt.
 	}
 }
 
-func getJsonValueAsIntFromMessage(message pahoMqtt.Message) int {
+func getJSONValueAsIntFromMessage(message pahoMqtt.Message) int {
 	// TODO
 	fmt.Println(string(message.Payload()))
 	return 50
