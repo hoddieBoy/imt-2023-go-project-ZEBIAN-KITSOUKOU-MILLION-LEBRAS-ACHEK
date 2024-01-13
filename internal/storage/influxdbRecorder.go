@@ -26,6 +26,7 @@ type InfluxDBSettings struct {
 
 func NewInfluxDBRecorder(settings InfluxDBSettings) (*InfluxDBRecorder, error) {
 	client := influxdb2.NewClient(settings.URL, settings.Token)
+
 	return &InfluxDBRecorder{
 		mu:     sync.Mutex{},
 		client: client,

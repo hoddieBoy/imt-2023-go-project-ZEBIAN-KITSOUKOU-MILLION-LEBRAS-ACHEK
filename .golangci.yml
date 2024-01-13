@@ -10,6 +10,9 @@ linters-settings:
         min-occurrences: 2
     misspell:
         locale: US
+    gosec:
+        excludes:
+            - G404
 
 linters:
     disable-all: true

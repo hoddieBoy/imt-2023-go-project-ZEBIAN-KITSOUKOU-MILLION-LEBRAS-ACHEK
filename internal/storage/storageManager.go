@@ -93,9 +93,10 @@ func (s *Manager) Start() error {
 	for sensorType, recorders := range s.recorders {
 		for _, qos := range recorders {
 			if err := s.SubscribeToSensor(sensorType, qos); err != nil {
-				return fmt.Errorf("Failed to subscribe to sensor type %s: %v", sensorType, err)
+				return fmt.Errorf("failed to subscribe to sensor type %s: %v", sensorType, err)
 			}
 		}
 	}
+
 	return nil
 }

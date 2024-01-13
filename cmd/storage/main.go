@@ -75,6 +75,7 @@ func main() {
 		if err := measurement.PublishOnMQTT(1, false, client); err != nil {
 			panic(err)
 		}
+
 		time.Sleep(1 * time.Second)
 	}
 }
