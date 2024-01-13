@@ -1,6 +1,7 @@
 package main
 
 import (
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt_helper"
 )
 

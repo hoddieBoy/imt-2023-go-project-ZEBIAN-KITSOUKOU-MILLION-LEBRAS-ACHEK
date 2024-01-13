@@ -4,11 +4,12 @@ import (
 	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt_helper"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/storage"
+	"math/rand"
 	"time"
 )
 
 func main() {
-	if config, err := mqtt_helper.RetrievePropertiesFromConfig("./config/brokerLocalhostConfig.yaml"); err != nil {
+	if config, err := mqtt_helper.RetrieveMQTTPropertiesFromYaml("./config/brokerLocalhostConfig.yaml"); err != nil {
 		panic(err)
 	} else {
 		client := mqtt_helper.NewClient(config, "aClientId")
@@ -33,7 +34,7 @@ func main() {
 		if influxRecorder, err := storage.NewInfluxDBRecorder(
 			storage.InfluxDBSettings{
 				URL:          "http://localhost:8086",
-				Token:        "oovEfiXEVMcbEFEmy9jNNKUnWvlBexVmvSH6Ohr8f5b201RHNx5nb4D_5Y4o6mhwUWx--sV018H0ZLf6zDaD8Q==",
+				Token:        "hDwq6Hds2yXjMjDHCFjBNZZ_vOsEbF4DdKvUfnjb8rMNkTRjCrOwnoLfPf9Oy7eOqHsvawau36-DVqHUwvKNGw==",
 				Bucket:       "metrics",
 				Organization: "meteo-airport",
 			}); err != nil {
@@ -46,17 +47,29 @@ func main() {
 			panic(err)
 		}
 
+		defer func(manager *storage.Manager) {
+			err := manager.Close()
+			if err != nil {
+				panic(err)
+			}
+		}(manager)
+
 		measurement := sensor.Measurement{
 			SensorID:  1,
 			AirportID: "NTE",
 			Type:      sensor.Temperature,
-			Value:     40.0,
+			Value:     20.0,
 			Unit:      "°C",
 			Timestamp: time.Now(),
 		}
 
-		if err := measurement.PublishOnMQTT(1, false, client); err != nil {
-			panic(err)
+		for {
+			measurement.Timestamp = time.Now()
+			measurement.Value = measurement.Value + rand.Float64() - 0.5
+			if err := measurement.PublishOnMQTT(1, false, client); err != nil {
+				panic(err)
+			}
+			time.Sleep(1 * time.Second)
 		}
 
 	}
