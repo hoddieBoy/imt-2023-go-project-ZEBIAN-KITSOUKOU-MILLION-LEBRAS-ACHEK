@@ -47,16 +47,6 @@ func (c *SensorConfig) Validate() error {
 	return nil
 }
 
-func RetrieveSensorPropertiesFromYaml(filePath string) (*SensorConfig, error) {
-	var cfg SensorConfig
-	err := RetrievePropertiesFromYaml(filePath, &cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	return &cfg, nil
-}
-
 func LoadDefaultSensorConfig() (*SensorConfig, error) {
 	var cfg SensorConfig
 	err := LoadDefaultConfig(&cfg)

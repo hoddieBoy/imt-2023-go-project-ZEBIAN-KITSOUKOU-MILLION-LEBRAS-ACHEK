@@ -2,23 +2,20 @@ storages:
   temperature:
     influxdb:
       url: "http://localhost:8086"
-      token: "Y0v8Bxv9ZsiA1LZh0bPcfe1Tploz84mM8T4aRU154nETyRabwfPM6T-4ciBY3zS5CiQrtcCAjZ9QTAv1BrG0aA=="
+      token: "9o53z0vBFzgb1w9f-icJgdg8gOltOTY9AwpXaUeimPxbiJ2md5ys32K1hTWf82ZV03oMFL2XM_PL3sXjhs1rRg=="
       bucket: "metrics"
       organization: "meteo-airport"
     csv:
       path_directory: "/path/to/directory"
+      separator: ';'
       time_format: "2006-01-02T15:04:05Z07:00"
 
   humidity:
     influxdb:
       url: "http://localhost:8086"
-      token: "Y0v8Bxv9ZsiA1LZh0bPcfe1Tploz84mM8T4aRU154nETyRabwfPM6T-4ciBY3zS5CiQrtcCAjZ9QTAv1BrG0aA=="
+      token: "9o53z0vBFzgb1w9f-icJgdg8gOltOTY9AwpXaUeimPxbiJ2md5ys32K1hTWf82ZV03oMFL2XM_PL3sXjhs1rRg=="
       bucket: "metrics"
       organization: "meteo-airport"
-    csv:
-      path_directory: "/path/to/directory"
-      time_format: "2006-01-02T15:04:05Z07:00"
-
 
 mqtt:
   protocol: "tcp"

@@ -22,19 +22,17 @@ func RetrievePropertiesFromYaml(filePath string, cfg Config) error {
 	if err != nil {
 		return err
 	}
-	logutil.Info("TYPE: %T", cfg)
 	err = yaml.Unmarshal(file, cfg)
 	if err != nil {
 		return err
 	}
-	logutil.Info("Loaded config: %v", cfg)
 	return nil
 }
 
 func LoadDefaultConfig(cfg Config) error {
 	exePath, err := os.Executable()
 	if err != nil {
-		logutil.Error("Failed to retrieve executable path: << %v >>", err)
+		logutil.Error("Failed to retrieve executable path for loading default config: %v", err)
 		return err
 	}
 

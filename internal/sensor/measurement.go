@@ -44,16 +44,16 @@ func FromJSON(payload []byte) (*Measurement, error) {
 	return &measurement, nil
 }
 
-func (m *Measurement) ToCSV(separator rune, timeFormat string) string {
+func (m *Measurement) ToCSV(separator string, timeFormat string) string {
 	return fmt.Sprintf(
-		"%d%c%s%c%s%c%f%c%s%c%s",
+		"%d%s%s%s%s%s%f%s%s%s%s",
 		m.SensorID, separator, m.AirportID, separator, m.Type, separator, m.Value, separator, m.Unit, separator, m.Timestamp.Format(timeFormat),
 	)
 }
 
-func MeasurementFieldNames(separator rune) string {
+func MeasurementFieldNames(separator string) string {
 	return fmt.Sprintf(
-		"sensor_id%cairport_id%ctype%cvalue%cunit%ctimestamp",
+		"sensor_id%sairport_id%stype%svalue%sunit%stimestamp",
 		separator, separator, separator, separator, separator,
 	)
 }
@@ -64,12 +64,10 @@ func (m *Measurement) PublishOnMQTT(qos byte, retained bool, client *mqtt_helper
 	topic := fmt.Sprintf("airport/%s/%s/%s", m.AirportID, m.Timestamp.Format("2006-01-02"), m.Type)
 	payload, err := m.ToJSON()
 	if err != nil {
-		logutil.Error(fmt.Sprintf("Failed to marshal measurement to JSON: %v", err))
 		return err
 	}
 
 	if err := client.Publish(topic, qos, retained, payload); err != nil {
-		logutil.Error(fmt.Sprintf("Failed to publish measurement to topic %s: %v", topic, err))
 		return err
 	}
 

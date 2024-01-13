@@ -7,13 +7,13 @@ import (
 )
 
 type StorageConfig struct {
-	Storages map[string]map[string]*Storage
-	MQTT     *mqtt_helper.MQTTConfig
+	Storages map[string]Storage
+	MQTT     mqtt_helper.MQTTConfig `yaml:"mqtt"`
 }
 
 type Storage struct {
-	InfluxDB InfluxDBSettings
-	CSV      CSVSettings
+	InfluxDB InfluxDBSettings `yaml:"influxdb"`
+	CSV      CSVSettings      `yaml:"csv"`
 }
 
 type InfluxDBSettings struct {
@@ -25,7 +25,7 @@ type InfluxDBSettings struct {
 
 type CSVSettings struct {
 	PathDirectory string
-	Separator     rune
+	Separator     string
 	TimeFormat    string
 }
 
@@ -52,26 +52,11 @@ func (c *Storage) Validate() error {
 
 func (c *StorageConfig) Validate() error {
 	logutil.Info("Validating storage config: %v", c.Storages)
-	for measurement, storages := range c.Storages {
-		storageTypes := make(map[string]bool)
-
-		for _, storage := range storages {
-			if err := storage.Validate(); err != nil {
-				return err
-			}
-
-			storageTypes["influxdb"] = storage.InfluxDB != (InfluxDBSettings{})
-			storageTypes["csv"] = storage.CSV != (CSVSettings{})
+	for _, storages := range c.Storages {
+		// For each measurement, check if the storage is valid
+		if err := storages.Validate(); err != nil {
+			return err
 		}
-
-		if !storageTypes["influxdb"] && !storageTypes["csv"] {
-			return fmt.Errorf("no storage type found for measurement %s", measurement)
-		}
-
-		if storageTypes["influxdb"] && storageTypes["csv"] {
-			return fmt.Errorf("multiple storage types found for measurement %s", measurement)
-		}
-
 	}
 
 	if err := c.MQTT.Validate(); err != nil {
@@ -106,8 +91,8 @@ func (c *CSVSettings) Validate() error {
 		return fmt.Errorf("csv path directory is empty")
 	}
 
-	if c.Separator == 0 {
-		return fmt.Errorf("csv separator is empty")
+	if c.Separator == "" && len(c.Separator) > 1 {
+		return fmt.Errorf("csv separator is empty or more than one character")
 	}
 
 	if c.TimeFormat == "" {
@@ -117,22 +102,12 @@ func (c *CSVSettings) Validate() error {
 	return nil
 }
 
-func RetrieveStoragePropertiesFromYaml(filePath string) (*StorageConfig, error) {
-	var cfg StorageConfig
-	err := RetrievePropertiesFromYaml(filePath, &cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	return &cfg, nil
-}
-
 func LoadDefaultStorageConfig() (*StorageConfig, error) {
-	var cfg = StorageConfig{}
-	err := LoadDefaultConfig(&cfg)
+	cfg := &StorageConfig{}
+	err := LoadDefaultConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	return &cfg, nil
+	return cfg, nil
 }

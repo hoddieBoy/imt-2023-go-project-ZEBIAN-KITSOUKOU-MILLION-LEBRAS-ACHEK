@@ -2,44 +2,30 @@ package main
 
 import (
 	"imt-atlantique.project.group.fr/meteo-airport/internal/config_helper"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt_helper"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/storage"
+	"os"
 	"time"
 )
 
 func main() {
+	args := os.Args[1:]
+	if len(args) == 0 {
+		logutil.Warn("No config file specified, using default one")
+	}
 	config_helper.SetDefaultConfigFileName("storage_config.yaml")
 	if config, err := config_helper.LoadDefaultStorageConfig(); err != nil {
 		panic(err)
 	} else {
-		client := mqtt_helper.NewClient(config.MQTT, "aClientId")
+		client := mqtt_helper.NewClient(&config.MQTT, "aClientId")
 		if err := client.Connect(); err != nil {
 			panic(err)
 		}
 		defer client.Disconnect()
-
+		logutil.Info("Config: %v", config)
 		manager := storage.NewManager(client)
-
-		for measurement, storagesSettings := range config.Storages {
-			for _, storageSettings := range storagesSettings {
-				if storageSettings.InfluxDB != (config_helper.InfluxDBSettings{}) {
-					if recorder, err := storage.NewInfluxDBRecorder(storageSettings.InfluxDB); err != nil {
-						panic(err)
-					} else {
-						manager.AddRecorder(sensor.MeasurementType(measurement), recorder, 1)
-					}
-				}
-
-				if storageSettings.CSV != (config_helper.CSVSettings{}) {
-					if recorder, err := storage.NewCSVRecorder(storageSettings.CSV); err != nil {
-						panic(err)
-					} else {
-						manager.AddRecorder(sensor.MeasurementType(measurement), recorder, 1)
-					}
-				}
-			}
-		}
 
 		if err := manager.Start(); err != nil {
 			panic(err)

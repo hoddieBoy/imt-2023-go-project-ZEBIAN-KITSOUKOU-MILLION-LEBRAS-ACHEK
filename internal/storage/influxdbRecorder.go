@@ -36,11 +36,12 @@ func (r *InfluxDBRecorder) RecordOnContext(ctx context.Context, m *sensor.Measur
 	p := influxdb2.NewPointWithMeasurement(string(m.Type)).
 		AddTag("airport", m.AirportID).
 		AddTag("sensor", strconv.FormatInt(m.SensorID, 10)).
+		AddTag("unit", m.Unit).
 		AddField("value", m.Value).
 		SetTime(m.Timestamp)
 
 	if err := writeAPI.WritePoint(ctx, p); err != nil {
-		logutil.Error("Failed to write point: %v", err)
+		logutil.Error("Failed to write point on InfluxDB: %v", err)
 		return err
 	}
 
