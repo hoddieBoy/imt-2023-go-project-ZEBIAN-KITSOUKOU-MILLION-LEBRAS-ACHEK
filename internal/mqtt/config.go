@@ -1,9 +1,9 @@
-package mqtt_helper
+package mqtt
 
 import (
 	"fmt"
 	"gopkg.in/yaml.v3"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"os"
 )
 
@@ -41,7 +41,7 @@ type MQTTRoot struct {
 func RetrieveMQTTPropertiesFromYaml(filePath string) (*MQTTConfig, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
-		logutil.Error("Failed to open file:\n\t << %v >>", err)
+		log.Error("Failed to open file:\n\t << %v >>", err)
 		return nil, err
 	}
 	defer func() {
@@ -53,12 +53,12 @@ func RetrieveMQTTPropertiesFromYaml(filePath string) (*MQTTConfig, error) {
 	var cfg MQTTConfig
 	decoder := yaml.NewDecoder(f)
 	if decoder.Decode(&cfg) != nil {
-		logutil.Error("Failed to decode file: << %v >>", err)
+		log.Error("Failed to decode file: << %v >>", err)
 		return nil, err
 	}
 
 	if err := cfg.Validate(); err != nil {
-		logutil.Error("Failed to validate config: << %v >>", err)
+		log.Error("Failed to validate config: << %v >>", err)
 		return nil, err
 	}
 

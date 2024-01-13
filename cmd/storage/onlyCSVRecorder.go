@@ -1,17 +1,17 @@
 package main
 
 import (
-	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt_helper"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/storage"
 	"time"
 )
 
 func main() {
-	if config, err := mqtt_helper.RetrieveMQTTPropertiesFromYaml("./config/brokerLocalhostConfig.yaml"); err != nil {
+	if config, err := mqtt.RetrieveMQTTPropertiesFromYaml("./config/brokerLocalhostConfig.yaml"); err != nil {
 		panic(err)
 	} else {
-		client := mqtt_helper.NewClient(config, "aClientId")
+		client := mqtt.NewClient(config, "aClientId")
 		if err := client.Connect(); err != nil {
 			panic(err)
 		}

@@ -3,8 +3,8 @@ package sensor
 import (
 	"encoding/json"
 	"fmt"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt_helper"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
 	"time"
 )
 
@@ -28,7 +28,7 @@ func (m *Measurement) String() string {
 func (m *Measurement) ToJSON() ([]byte, error) {
 	payload, err := json.Marshal(m)
 	if err != nil {
-		logutil.Error("Failed to marshal measurement to JSON: %v", err)
+		log.Error("Failed to marshal measurement to JSON: %v", err)
 		return nil, err
 	}
 
@@ -38,7 +38,7 @@ func (m *Measurement) ToJSON() ([]byte, error) {
 func FromJSON(payload []byte) (*Measurement, error) {
 	var measurement Measurement
 	if err := json.Unmarshal(payload, &measurement); err != nil {
-		logutil.Error("Failed to unmarshal measurement from JSON: %v", err)
+		log.Error("Failed to unmarshal measurement from JSON: %v", err)
 		return nil, err
 	}
 	return &measurement, nil
@@ -59,17 +59,17 @@ func MeasurementFieldNames(separator rune) string {
 }
 
 // PublishOnMQTT publishes a measurement to the MQTT broker
-func (m *Measurement) PublishOnMQTT(qos byte, retained bool, client *mqtt_helper.MQTTClient) error {
+func (m *Measurement) PublishOnMQTT(qos byte, retained bool, client *mqtt.MQTTClient) error {
 	// Topic: airport/<airport_id>/<year-month-day>/<type_of_measurement>
 	topic := fmt.Sprintf("airport/%s/%s/%s", m.AirportID, m.Timestamp.Format("2006-01-02"), m.Type)
 	payload, err := m.ToJSON()
 	if err != nil {
-		logutil.Error(fmt.Sprintf("Failed to marshal measurement to JSON: %v", err))
+		log.Error(fmt.Sprintf("Failed to marshal measurement to JSON: %v", err))
 		return err
 	}
 
 	if err := client.Publish(topic, qos, retained, payload); err != nil {
-		logutil.Error(fmt.Sprintf("Failed to publish measurement to topic %s: %v", topic, err))
+		log.Error(fmt.Sprintf("Failed to publish measurement to topic %s: %v", topic, err))
 		return err
 	}
 
