@@ -33,7 +33,6 @@ linters:
         - exportloopref
         - gocritic
         - gosec
-        - fieldalignment
         - dupl
         - funlen
         - whitespace
