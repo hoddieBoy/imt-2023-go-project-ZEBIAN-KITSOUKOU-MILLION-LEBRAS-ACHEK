@@ -1,0 +1,7 @@
+# Server Configuration
+server:
+    protocol: "tcp"
+    host: "localhost"
+    port: 1883
+    username: "admin"
+    password: "anotherSecretPassword"
