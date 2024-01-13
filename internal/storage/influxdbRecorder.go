@@ -2,11 +2,12 @@ package storage
 
 import (
 	"context"
-	"github.com/influxdata/influxdb-client-go/v2"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 	"strconv"
 	"sync"
+
+	"github.com/influxdata/influxdb-client-go/v2"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 
 type InfluxDBRecorder struct {
@@ -47,7 +48,7 @@ func (r *InfluxDBRecorder) RecordOnContext(ctx context.Context, m *sensor.Measur
 		SetTime(m.Timestamp)
 
 	if err := writeAPI.WritePoint(ctx, p); err != nil {
-		logutil.Error("Failed to write point: %v", err)
+		log.Error("Failed to write point: %v", err)
 		return err
 	}
 

@@ -1,6 +1,6 @@
 module imt-atlantique.project.group.fr/meteo-airport
 
-go 1.21.4
+go 1.21
 
 require (
 	github.com/eclipse/paho.mqtt.golang v1.4.3
