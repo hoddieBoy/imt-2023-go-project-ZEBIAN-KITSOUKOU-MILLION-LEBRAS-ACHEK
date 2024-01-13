@@ -30,6 +30,7 @@ func publishData(actualWind float64, client *mqtt_helper.MQTTClient) {
 		AirportID: "CDG",
 		Type:      "Wind speed",
 		Value:     actualWind,
+		Unit:      "Km/h",
 		Timestamp: time.Now(),
 	}
 
