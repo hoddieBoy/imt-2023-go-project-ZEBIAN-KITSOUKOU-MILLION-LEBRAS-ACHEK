@@ -1,0 +1,51 @@
+linters-settings:
+    govet:
+        check-shadowing: true
+    golint:
+        min-confidence: 0.8
+    gocyclo:
+        min-complexity: 10
+    maligned:
+        suggest-new: true
+    dupl:
+        threshold: 100
+    goconst:
+        min-len: 2
+        min-occurrences: 2
+    misspell:
+        locale: US
+
+linters:
+    disable-all: true
+    enable:
+        - deadcode
+        - govet
+        - gocyclo
+        - golint
+        - unused
+        - gosimple
+        - structcheck
+        - varcheck
+        - ineffassign
+        - errcheck
+        - staticcheck
+        - unconvert
+        - goconst
+        - goimports
+        - misspell
+        - unparam
+        - nakedret
+        - prealloc
+        - scopelint
+        - gocritic
+        - gosec
+        - maligned
+        - dupl
+        - funlen
+        - whitespace
+        - wsl
+        - lll
+
+run:
+    concurrency: 4
+    timeout: 5m
