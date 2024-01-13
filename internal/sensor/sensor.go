@@ -7,12 +7,12 @@ import (
 	"time"
 )
 
-type sensor struct {
+type Sensor struct {
 	client *mqtt_helper.MQTTClient
 	data   Measurement
 }
 
-func (s sensor) InitializeSensor() {
+func (s Sensor) InitializeSensor() {
 	if config, err := mqtt_helper.RetrieveMQTTPropertiesFromYaml("./config/hiveClientConfig.yaml"); err != nil {
 		panic(err)
 	} else {
@@ -27,7 +27,7 @@ func (s sensor) InitializeSensor() {
 	}
 }
 
-func (s sensor) generateData(sensorId int64, airportId string, sensorType MeasurementType, value float64, unit string, timestamp time.Time) {
+func (s Sensor) generateData(sensorId int64, airportId string, sensorType MeasurementType, value float64, unit string, timestamp time.Time) {
 
 	s.data = Measurement{
 		SensorID:  sensorId,
@@ -39,7 +39,7 @@ func (s sensor) generateData(sensorId int64, airportId string, sensorType Measur
 	}
 }
 
-func (s sensor) publishData() {
+func (s Sensor) publishData() {
 	err := s.data.PublishOnMQTT(2, false, s.client)
 	if err != nil {
 		logutil.Error(fmt.Sprintf("Failed to publish data to client: %v", err))
