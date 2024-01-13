@@ -42,6 +42,7 @@ func (r *InfluxDBRecorder) RecordOnContext(ctx context.Context, m *sensor.Measur
 	p := influxdb2.NewPointWithMeasurement(string(m.Type)).
 		AddTag("airport", m.AirportID).
 		AddTag("sensor", strconv.FormatInt(m.SensorID, 10)).
+		AddField("unit", m.Unit).
 		AddField("value", m.Value).
 		SetTime(m.Timestamp)
 
@@ -53,7 +54,6 @@ func (r *InfluxDBRecorder) RecordOnContext(ctx context.Context, m *sensor.Measur
 	return nil
 }
 
-// Record stores a measurement
 func (r *InfluxDBRecorder) Record(m *sensor.Measurement) error {
 	return r.RecordOnContext(context.Background(), m)
 }
