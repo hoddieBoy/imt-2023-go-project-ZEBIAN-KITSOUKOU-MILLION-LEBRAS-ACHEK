@@ -12,7 +12,7 @@ type Sensor struct {
 	data   Measurement
 }
 
-func (s *Sensor) InitializeSensor() {
+func (s *Sensor) InitializeSensor() error {
 	if config, err := mqtt_helper.RetrieveMQTTPropertiesFromYaml("./config/hiveClientConfig.yaml"); err != nil {
 		panic(err)
 	} else {
@@ -21,9 +21,11 @@ func (s *Sensor) InitializeSensor() {
 		err := client.Connect()
 		if err != nil {
 			logutil.Error(fmt.Sprintf("Cannot connect to client: %v", err))
+			return err
 		}
 
 		s.client = client
+		return nil
 	}
 }
 
@@ -40,9 +42,12 @@ func (s *Sensor) GenerateData(sensorId int64, airportId string, sensorType Measu
 
 }
 
-func (s *Sensor) PublishData() {
+func (s *Sensor) PublishData() error {
 	err := s.data.PublishOnMQTT(2, false, s.client)
 	if err != nil {
 		logutil.Error(fmt.Sprintf("Failed to publish data to client: %v", err))
+		return err
 	}
+
+	return nil
 }
