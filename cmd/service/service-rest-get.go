@@ -88,22 +88,26 @@ func MeasurementIntervalHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func AverageMeasurementOf3TypesInADayHandler(writer http.ResponseWriter, r *http.Request) {
+func AverageMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request) {
 	log.Info("This is the average measurement of 3 types in a day handler")
 
-	//day := r.URL.Query().Get("day")
-	//log.Info("day: %s", day)
+	var types []string
+	types = r.URL.Query()["types"]
+	day := r.URL.Query().Get("day")
+	log.Info("day: %s", day)
+	log.Info("types: %s", types)
+
 	client := influxdb2.NewClient("http://localhost:8086",
 		"upvBeRD7IGz2JkRYkF16F4PK7g-uciplnKnwMnLnFqk_5AAoT-dcUz_fWoeL0f6iy3enhBS-N0tLhwfZ0ILZiA==")
 
 	fluxQuery := fmt.Sprintf(`from(bucket: "metrics")
-	|> range(start: -30d)
+	|> range(start: %s, stop: %s)
 	|> filter(fn: (r) => r._measurement == "temperature" or r._measurement == "humidity" or r._measurement == "pressure" )
 	|> filter(fn: (r) => r["_field"] == "value")
-	|> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+	|> aggregateWindow(every: 24h, fn: mean, createEmpty: false)
 	|> group(columns: ["_measurement"])
 	|> yield(name: "mean")
-	`)
+	`, day, day+"T23:59:59Z")
 	log.Info("fluxQuery: %s", fluxQuery)
 
 	// get QueryTableResult
@@ -144,18 +148,13 @@ func AverageMeasurementOf3TypesInADayHandler(writer http.ResponseWriter, r *http
 
 }
 
-func MeasurementOfADayByTypeHandler(writer http.ResponseWriter, request *http.Request) {
-
-}
-
 func main() {
 	router := mux.NewRouter()
 	// TODO: add redirect to HomeHandler
 	log.Info("Connected to the server on port 8081 !")
 	router.HandleFunc("/api/v1/measurements", HomeHandler)
 	router.HandleFunc("/api/v1/measurements/interval/{type}/", MeasurementIntervalHandler)
-	router.HandleFunc("/api/v1/measurements/day", AverageMeasurementOf3TypesInADayHandler)
-	router.HandleFunc("/api/v1/measurements/byType/{type}", MeasurementOfADayByTypeHandler)
+	router.HandleFunc("/api/v1/measurements/mean/", AverageMeasurementInADayHandler)
 
 	err := http.ListenAndServe(":8081", router)
 	if err != nil {
