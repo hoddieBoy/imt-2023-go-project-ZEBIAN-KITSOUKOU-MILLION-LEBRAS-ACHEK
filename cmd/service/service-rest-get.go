@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/influxdata/influxdb-client-go/v2"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"net/http"
 )
 
@@ -14,7 +14,7 @@ type MeasurementHandler struct {
 }
 
 func HomeHandler(writer http.ResponseWriter, request *http.Request) {
-	logutil.Info("bla blo")
+	log.Info("bla blo")
 	jsonData, err := json.Marshal(map[string]interface{}{
 		"message": "Hello welcome to our API",
 	},
@@ -31,7 +31,7 @@ func HomeHandler(writer http.ResponseWriter, request *http.Request) {
 }
 
 func MeasurementInterval(w http.ResponseWriter, r *http.Request) {
-	logutil.Info("This is the measurement interval handler")
+	log.Info("This is the measurement interval handler")
 	id := mux.Vars(r)["type"]
 	start := r.URL.Query().Get("start")
 	end := r.URL.Query().Get("end")
@@ -42,12 +42,12 @@ func MeasurementInterval(w http.ResponseWriter, r *http.Request) {
 	fluxQuery := fmt.Sprintf(`from(bucket: "metrics")
 	|> range(start: %s , stop: %s)
 	|> filter(fn: (r) => r._measurement == "%s" )`, start, end, id)
-	logutil.Info("fluxQuery: %s", fluxQuery)
+	log.Info("fluxQuery: %s", fluxQuery)
 
 	// get QueryTableResult
 	result, err := client.QueryAPI("meteo-airport").Query(context.Background(), fluxQuery)
 	if err != nil {
-		logutil.Info("Error: %s", err)
+		log.Info("Error: %s", err)
 		panic(err)
 	}
 
@@ -57,10 +57,10 @@ func MeasurementInterval(w http.ResponseWriter, r *http.Request) {
 	for result.Next() {
 		// Notice when group key has changed
 		if result.TableChanged() {
-			logutil.Info("table: %s", result.TableMetadata().String())
+			log.Info("table: %s", result.TableMetadata().String())
 		}
 		// Access data
-		logutil.Info("value: %v", result.Record().Value())
+		log.Info("value: %v", result.Record().Value())
 		data = append(data, map[string]interface{}{"value": result.Record().Value(),
 			"time": result.Record().Time().String(),
 			"unit": result.Record().Field()})
@@ -85,11 +85,11 @@ func MeasurementInterval(w http.ResponseWriter, r *http.Request) {
 }
 
 func AverageMeasurementOfADay(writer http.ResponseWriter, r *http.Request) {
-	logutil.Info("This is the average measurement of a day handler")
+	log.Info("This is the average measurement of a day handler")
 	// TODO: get measurement types from database
 
 	day := r.URL.Query().Get("day")
-	logutil.Info("day: %s", day)
+	log.Info("day: %s", day)
 	client := influxdb2.NewClient("http://localhost:8086",
 		"upvBeRD7IGz2JkRYkF16F4PK7g-uciplnKnwMnLnFqk_5AAoT-dcUz_fWoeL0f6iy3enhBS-N0tLhwfZ0ILZiA==")
 
@@ -98,7 +98,7 @@ func AverageMeasurementOfADay(writer http.ResponseWriter, r *http.Request) {
 	|> range(start: %s , stop: %s)
 	|> group(columns: ["_measurement"])
 	`)
-	logutil.Info("fluxQuery: %s", fluxQuery)
+	log.Info("fluxQuery: %s", fluxQuery)
 
 	// get QueryTableResult
 	result, err := client.QueryAPI("meteo-airport").Query(context.Background(), fluxQuery)
@@ -111,10 +111,10 @@ func AverageMeasurementOfADay(writer http.ResponseWriter, r *http.Request) {
 	for result.Next() {
 		// Notice when group key has changed
 		if result.TableChanged() {
-			logutil.Info("table: %s", result.TableMetadata().String())
+			log.Info("table: %s", result.TableMetadata().String())
 		}
 		// Access data
-		logutil.Info("value: %v", result.Record().Value())
+		log.Info("value: %v", result.Record().Value())
 		data = append(data, map[string]interface{}{
 			"value": result.Record().Value(),
 			"time":  result.Record().Time().String(),
@@ -145,7 +145,7 @@ func MeasurementOfADayByType(writer http.ResponseWriter, request *http.Request) 
 func main() {
 	router := mux.NewRouter()
 	// TODO: add redirect to HomeHandler
-	logutil.Info("Connected to the server on port 8081 !")
+	log.Info("Connected to the server on port 8081 !")
 	router.HandleFunc("/api/v1/measurements", HomeHandler)
 	//with query parameters
 	router.HandleFunc("/api/v1/measurements/interval/{type}/", MeasurementInterval)
