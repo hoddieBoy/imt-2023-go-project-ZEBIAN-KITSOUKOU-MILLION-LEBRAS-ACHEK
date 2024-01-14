@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/influxdata/influxdb-client-go/v2"
@@ -16,7 +16,7 @@ type MeasurementHandler struct {
 }
 
 func HomeHandler(writer http.ResponseWriter, request *http.Request) {
-	log.Info("bla blo")
+	log.Info("This is the home handler")
 	jsonData, err := json.Marshal(map[string]interface{}{
 
 		"message": "Hello welcome to our API",
@@ -27,6 +27,7 @@ func HomeHandler(writer http.ResponseWriter, request *http.Request) {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	writer.Header().Set("Content-Type", "application/json")
 	_, err = writer.Write(jsonData)
 	if err != nil {
@@ -89,7 +90,7 @@ func MeasurementIntervalHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func AverageMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request) {
-	log.Info("This is the average measurement of 3 types in a day handler")
+	log.Info("This is the average measurement in a day handler")
 
 	var types []string
 	types = r.URL.Query()["types"]
@@ -100,14 +101,21 @@ func AverageMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request
 	client := influxdb2.NewClient("http://localhost:8086",
 		"upvBeRD7IGz2JkRYkF16F4PK7g-uciplnKnwMnLnFqk_5AAoT-dcUz_fWoeL0f6iy3enhBS-N0tLhwfZ0ILZiA==")
 
+	var typeF []string
+	for _, t := range types {
+		typeF = append(typeF, fmt.Sprintf(`r._measurement == "%s"`, t))
+	}
+	log.Info("typeF: %s", typeF)
+	log.Info("typeF: %s", strings.Join(typeF, " || "))
+
 	fluxQuery := fmt.Sprintf(`from(bucket: "metrics")
 	|> range(start: %s, stop: %s)
-	|> filter(fn: (r) => r._measurement == "temperature" or r._measurement == "humidity" or r._measurement == "pressure" )
+	|> filter(fn: (r) => %s)
 	|> filter(fn: (r) => r["_field"] == "value")
 	|> aggregateWindow(every: 24h, fn: mean, createEmpty: false)
 	|> group(columns: ["_measurement"])
 	|> yield(name: "mean")
-	`, day, day+"T23:59:59Z")
+	`, day, day+"T23:59:59Z", strings.Join(typeF, " || "))
 	log.Info("fluxQuery: %s", fluxQuery)
 
 	// get QueryTableResult
@@ -133,7 +141,9 @@ func AverageMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request
 	}
 
 	jsonData, err := json.Marshal(map[string]interface{}{
-		"data": data,
+		"day":   day,
+		"types": types,
+		"data":  data,
 	})
 
 	if err != nil {
