@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/influxdata/influxdb-client-go/v2"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
-	"net/http"
 )
 
 type MeasurementHandler struct {
@@ -16,9 +18,11 @@ type MeasurementHandler struct {
 func HomeHandler(writer http.ResponseWriter, request *http.Request) {
 	log.Info("bla blo")
 	jsonData, err := json.Marshal(map[string]interface{}{
+
 		"message": "Hello welcome to our API",
 	},
 	)
+
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
@@ -30,7 +34,7 @@ func HomeHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
-func MeasurementInterval(w http.ResponseWriter, r *http.Request) {
+func MeasurementIntervalHandler(w http.ResponseWriter, r *http.Request) {
 	log.Info("This is the measurement interval handler")
 	id := mux.Vars(r)["type"]
 	start := r.URL.Query().Get("start")
@@ -84,7 +88,7 @@ func MeasurementInterval(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func AverageMeasurementOfADay(writer http.ResponseWriter, r *http.Request) {
+func AverageMeasurementOf3TypesInADayHandler(writer http.ResponseWriter, r *http.Request) {
 	log.Info("This is the average measurement of a day handler")
 	// TODO: get measurement types from database
 
@@ -138,7 +142,7 @@ func AverageMeasurementOfADay(writer http.ResponseWriter, r *http.Request) {
 
 }
 
-func MeasurementOfADayByType(writer http.ResponseWriter, request *http.Request) {
+func MeasurementOfADayByTypeHandler(writer http.ResponseWriter, request *http.Request) {
 
 }
 
@@ -148,9 +152,9 @@ func main() {
 	log.Info("Connected to the server on port 8081 !")
 	router.HandleFunc("/api/v1/measurements", HomeHandler)
 	//with query parameters
-	router.HandleFunc("/api/v1/measurements/interval/{type}/", MeasurementInterval)
-	router.HandleFunc("/api/v1//measurements/day/", AverageMeasurementOfADay)
-	router.HandleFunc("/api/v1//measurements/byType/{type}", MeasurementOfADayByType)
+	router.HandleFunc("/api/v1/measurements/interval/{type}/", MeasurementIntervalHandler)
+	router.HandleFunc("/api/v1//measurements/day/", AverageMeasurementOf3TypesInADayHandler)
+	router.HandleFunc("/api/v1//measurements/byType/{type}", MeasurementOfADayByTypeHandler)
 
 	err := http.ListenAndServe(":8081", router)
 	if err != nil {
