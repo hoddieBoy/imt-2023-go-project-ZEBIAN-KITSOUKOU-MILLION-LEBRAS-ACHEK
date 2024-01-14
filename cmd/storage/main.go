@@ -39,17 +39,19 @@ func createManager(client *mqtt.Client) *storage.Manager {
 
 	manager.AddRecorder(sensor.Temperature, csvRecorder, 1)
 
-	if influxRecorder, err := storage.NewInfluxDBRecorder(
+	influxRecorder, err := storage.NewInfluxDBRecorder(
 		storage.InfluxDBSettings{
 			URL:          "http://localhost:8086",
 			Token:        "hDwq6Hds2yXjMjDHCFjBNZZ_vOsEbF4DdKvUfnjb8rMNkTRjCrOwnoLfPf9Oy7eOqHsvawau36-DVqHUwvKNGw==",
 			Bucket:       "metrics",
 			Organization: "meteo-airport",
-		}); err != nil {
+		})
+
+	if err != nil {
 		panic(err)
-	} else {
-		manager.AddRecorder(sensor.Temperature, influxRecorder, 1)
 	}
+
+	manager.AddRecorder(sensor.Temperature, influxRecorder, 1)
 
 	return manager
 }
