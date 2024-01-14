@@ -4,12 +4,13 @@ import (
 	"fmt"
 )
 
-type MQTTConfig struct {
-	Protocol string
-	Port     int
-	Host     string
-	Username string
-	Password string
+type Config struct {
+	Protocol string `yaml:"protocol"`
+	Port     int    `yaml:"port"`
+	Host     string `yaml:"host"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+	ClientID string `yaml:"client_id"`
 }
 
 func (c *Config) GetServerAddress() string {
@@ -27,6 +28,10 @@ func (c *Config) Validate() error {
 
 	if c.Protocol == "" {
 		return fmt.Errorf("protocol is empty")
+	}
+
+	if c.ClientID == "" {
+		return fmt.Errorf("clientID is empty")
 	}
 
 	return nil

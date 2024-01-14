@@ -1,0 +1,20 @@
+mqtt:
+  protocol: "tcp"
+  host: "localhost"
+  port: 1883
+  username: "admin"
+  password: "anotherSecretPassword"
+  client_id: "storage-manager-weather-sensors"
+
+sensors_alert:
+  temperature:
+    incoming_topic: "/sensors/temperature"
+    outgoing_topic: "/alerts/temperature"
+    lower_bound: -10
+    higher_bound: 50
+
+  humidity:
+    incoming_topic: "/sensors/humidity"
+    outgoing_topic: "/alerts/humidity"
+    lower_bound: 20
+    higher_bound: 80

@@ -2,16 +2,16 @@ package config_helper
 
 import (
 	"fmt"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt_helper"
+
+	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
 )
 
 type AlertConfig struct {
-	Broker       *mqtt_helper.MQTTConfig `yaml:"broker"`
-	SensorsAlert []SensorAlert           `yaml:"sensors_alert"`
+	Broker       mqtt.Config            `yaml:"broker"`
+	SensorsAlert map[string]SensorAlert `yaml:"sensors_alert"`
 }
 
 type SensorAlert struct {
-	SensorType    string `yaml:"sensor_type"`
 	IncomingTopic string `yaml:"incoming_topic"`
 	OutgoingTopic string `yaml:"outgoing_topic"`
 	LowerBound    int    `yaml:"lower_bound"`
@@ -26,6 +26,7 @@ func (c *AlertConfig) Validate() error {
 
 	// Check if the incoming topic is valid
 	for _, sensor := range c.SensorsAlert {
+		// Check if the sensor type is valid
 		if sensor.IncomingTopic == "" {
 			return fmt.Errorf("incoming topic is empty")
 		}

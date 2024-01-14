@@ -2,7 +2,8 @@ package config_helper
 
 import (
 	"fmt"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt_helper"
+
+	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
 )
 
 type SensorConfig struct {
@@ -14,8 +15,8 @@ type SensorConfig struct {
 		TimeFormat string `yaml:"time_format"`
 	} `yaml:"sensor"`
 	Broker struct {
-		Client       *mqtt_helper.MQTTConfig `yaml:"client"`
-		PublishTopic string                  `yaml:"publish_topic"`
+		Client       *mqtt.Config `yaml:"client"`
+		PublishTopic string       `yaml:"publish_topic"`
 	} `yaml:"broker"`
 }
 

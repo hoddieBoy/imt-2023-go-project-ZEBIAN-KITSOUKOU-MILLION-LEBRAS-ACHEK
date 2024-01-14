@@ -2,13 +2,13 @@ package config_helper
 
 import (
 	"fmt"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt_helper"
+
+	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
 )
 
 type StorageConfig struct {
 	Storages map[string]Storage
-	MQTT     mqtt_helper.MQTTConfig `yaml:"mqtt"`
+	MQTT     mqtt.Config
 }
 
 type Storage struct {
@@ -17,16 +17,16 @@ type Storage struct {
 }
 
 type InfluxDBSettings struct {
-	URL          string
-	Token        string
-	Bucket       string
-	Organization string
+	URL          string `yaml:"url"`
+	Token        string `yaml:"token"`
+	Bucket       string `yaml:"bucket"`
+	Organization string `yaml:"organization"`
 }
 
 type CSVSettings struct {
-	PathDirectory string
-	Separator     string
-	TimeFormat    string
+	PathDirectory string `yaml:"path_directory"`
+	Separator     string `yaml:"separator"`
+	TimeFormat    string `yaml:"time_format"`
 }
 
 func (c *Storage) Validate() error {
@@ -51,7 +51,6 @@ func (c *Storage) Validate() error {
 }
 
 func (c *StorageConfig) Validate() error {
-	logutil.Info("Validating storage config: %v", c.Storages)
 	for _, storages := range c.Storages {
 		// For each measurement, check if the storage is valid
 		if err := storages.Validate(); err != nil {

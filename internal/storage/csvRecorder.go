@@ -3,14 +3,13 @@ package storage
 import (
 	"encoding/csv"
 	"fmt"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/config_helper"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 	"os"
 	"path/filepath"
 	"strconv"
 	"sync"
 
-	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/config_helper"
+
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 

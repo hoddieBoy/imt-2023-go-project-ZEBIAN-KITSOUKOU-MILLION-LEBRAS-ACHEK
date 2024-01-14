@@ -3,40 +3,43 @@ package main
 import (
 	"fmt"
 
+	"os"
+
 	pahoMqtt "github.com/eclipse/paho.mqtt.golang"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/config_helper"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
-	"os"
 )
 
 func main() {
-	if config, err := config_helper.LoadDefaultAlertConfig(); err != nil {
+	config, err := config_helper.LoadDefaultAlertConfig()
+
+	if err != nil {
 		panic(err)
 	}
 
-	client := mqtt.NewClient(config.Broker, "anotherClientId")
+	client := mqtt.NewClient(&config.Broker)
 	if err := client.Connect(); err != nil {
 		panic(err)
 	}
 
 	defer client.Disconnect()
 
-		handleAlertListening(client, config.SensorsAlert)
+	handleAlertListening(client, config.SensorsAlert)
 
-		select {}
+	select {}
 }
 
-func handleAlertListening(client *mqtt_helper.MQTTClient, alerts []config_helper.SensorAlert) {
+func handleAlertListening(client *mqtt.Client, alerts map[string]config_helper.SensorAlert) {
 
-	for _, alert := range alerts {
+	for sensorType, alert := range alerts {
 		err := client.Subscribe(alert.IncomingTopic,
 			1,
 			checkValidRangeOnReception(client,
 				alert,
-				"Alert, "+alert.SensorType+" sensor out of range"))
+				"Alert, "+sensorType+" sensor out of range"))
 		if err != nil {
-			logutil.Error("failed to subscribe to topic %s:\n\t<<%v>>", alert.IncomingTopic, err)
+			log.Error("failed to subscribe to topic %s:\n\t<<%v>>", alert.IncomingTopic, err)
 			os.Exit(1)
 		}
 	}
@@ -44,7 +47,7 @@ func handleAlertListening(client *mqtt_helper.MQTTClient, alerts []config_helper
 
 func checkValidRangeOnReception(
 	helperClient *mqtt.Client,
-	sensorAlert mqtt.SensorAlertType,
+	sensorAlert config_helper.SensorAlert,
 	alertMessage string,
 ) pahoMqtt.MessageHandler {
 	return func(mqttClient pahoMqtt.Client, message pahoMqtt.Message) {

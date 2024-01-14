@@ -21,7 +21,7 @@ var (
 
 func logMessage(message, level string) string {
 	_, file, line, ok := runtime.Caller(2)
-	if ok && (level == red(bold("[Error] ")) || level == yellow(bold("[Warn] "))) {
+	if ok && level == red(bold("[Error] ")) {
 		return fmt.Sprintf("\n\t%s%s:%d %s%s", level, file, line, message, reset())
 	}
 

@@ -2,12 +2,10 @@ package storage
 
 import (
 	"context"
-	"github.com/influxdata/influxdb-client-go/v2"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/config_helper"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 	"strconv"
 	"sync"
+
+	"imt-atlantique.project.group.fr/meteo-airport/internal/config_helper"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"

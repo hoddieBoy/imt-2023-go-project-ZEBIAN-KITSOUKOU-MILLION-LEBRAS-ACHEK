@@ -1,10 +1,11 @@
 package config_helper
 
 import (
-	"gopkg.in/yaml.v3"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
+	"fmt"
 	"os"
 	"path/filepath"
+
+	"gopkg.in/yaml.v3"
 )
 
 type Config interface {
@@ -12,10 +13,6 @@ type Config interface {
 }
 
 var defaultConfigFileName = "config.yaml"
-
-func SetDefaultConfigFileName(name string) {
-	defaultConfigFileName = name
-}
 
 func RetrievePropertiesFromYaml(filePath string, cfg Config) error {
 	file, err := os.ReadFile(filePath)
@@ -32,8 +29,7 @@ func RetrievePropertiesFromYaml(filePath string, cfg Config) error {
 func LoadDefaultConfig(cfg Config) error {
 	exePath, err := os.Executable()
 	if err != nil {
-		logutil.Error("Failed to retrieve executable path for loading default config: %v", err)
-		return err
+		return fmt.Errorf("failed to get executable path: %w", err)
 	}
 
 	exeDir := filepath.Dir(exePath)
