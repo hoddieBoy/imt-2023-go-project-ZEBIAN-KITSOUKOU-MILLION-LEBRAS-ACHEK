@@ -1,27 +1,30 @@
 package main
 
 import (
-	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"fmt"
+
+	pahoMqtt "github.com/eclipse/paho.mqtt.golang"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/config_helper"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt_helper"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
 	"os"
 )
 
 func main() {
 	if config, err := config_helper.LoadDefaultAlertConfig(); err != nil {
 		panic(err)
-	} else {
-		client := mqtt_helper.NewClient(config.Broker, "anotherClientId")
-		if err := client.Connect(); err != nil {
-			panic(err)
-		}
-		defer client.Disconnect()
+	}
+
+	client := mqtt.NewClient(config.Broker, "anotherClientId")
+	if err := client.Connect(); err != nil {
+		panic(err)
+	}
+
+	defer client.Disconnect()
 
 		handleAlertListening(client, config.SensorsAlert)
 
 		select {}
-	}
 }
 
 func handleAlertListening(client *mqtt_helper.MQTTClient, alerts []config_helper.SensorAlert) {
@@ -39,9 +42,13 @@ func handleAlertListening(client *mqtt_helper.MQTTClient, alerts []config_helper
 	}
 }
 
-func checkValidRangeOnReception(helperClient *mqtt_helper.MQTTClient, sensorAlert config_helper.SensorAlert, alertMessage string) func(client mqtt.Client, message mqtt.Message) {
-	return func(mqttClient mqtt.Client, message mqtt.Message) {
-		sensorValue := getJsonValueAsIntFromMessage(message)
+func checkValidRangeOnReception(
+	helperClient *mqtt.Client,
+	sensorAlert mqtt.SensorAlertType,
+	alertMessage string,
+) pahoMqtt.MessageHandler {
+	return func(mqttClient pahoMqtt.Client, message pahoMqtt.Message) {
+		sensorValue := getJSONValueAsIntFromMessage(message)
 		if !(sensorAlert.LowerBound <= sensorValue && sensorValue <= sensorAlert.HigherBound) {
 			err := helperClient.Publish(sensorAlert.OutgoingTopic, 1, false, alertMessage)
 			if err != nil {
@@ -51,7 +58,8 @@ func checkValidRangeOnReception(helperClient *mqtt_helper.MQTTClient, sensorAler
 	}
 }
 
-func getJsonValueAsIntFromMessage(message mqtt.Message) int {
-	//TODO
+func getJSONValueAsIntFromMessage(message pahoMqtt.Message) int {
+	// TODO
+	fmt.Println(string(message.Payload()))
 	return 50
 }

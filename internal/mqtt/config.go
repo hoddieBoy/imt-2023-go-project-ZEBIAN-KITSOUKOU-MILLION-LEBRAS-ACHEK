@@ -1,4 +1,4 @@
-package mqtt_helper
+package mqtt
 
 import (
 	"fmt"
@@ -12,11 +12,11 @@ type MQTTConfig struct {
 	Password string
 }
 
-func (c *MQTTConfig) GetServerAddress() string {
+func (c *Config) GetServerAddress() string {
 	return fmt.Sprintf("%s://%s:%d", c.Protocol, c.Host, c.Port)
 }
 
-func (c *MQTTConfig) Validate() error {
+func (c *Config) Validate() error {
 	if c.Host == "" {
 		return fmt.Errorf("host is empty")
 	}

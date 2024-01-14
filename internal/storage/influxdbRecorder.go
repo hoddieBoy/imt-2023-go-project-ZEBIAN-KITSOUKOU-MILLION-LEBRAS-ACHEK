@@ -8,6 +8,10 @@ import (
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 	"strconv"
 	"sync"
+
+	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 
 type InfluxDBRecorder struct {
@@ -19,6 +23,7 @@ type InfluxDBRecorder struct {
 
 func NewInfluxDBRecorder(settings config_helper.InfluxDBSettings) (*InfluxDBRecorder, error) {
 	client := influxdb2.NewClient(settings.URL, settings.Token)
+
 	return &InfluxDBRecorder{
 		mu:     sync.Mutex{},
 		client: client,
@@ -41,14 +46,13 @@ func (r *InfluxDBRecorder) RecordOnContext(ctx context.Context, m *sensor.Measur
 		SetTime(m.Timestamp)
 
 	if err := writeAPI.WritePoint(ctx, p); err != nil {
-		logutil.Error("Failed to write point on InfluxDB: %v", err)
+		log.Error("Failed to write point on InfluxDB: %v", err)
 		return err
 	}
 
 	return nil
 }
 
-// Record stores a measurement
 func (r *InfluxDBRecorder) Record(m *sensor.Measurement) error {
 	return r.RecordOnContext(context.Background(), m)
 }
