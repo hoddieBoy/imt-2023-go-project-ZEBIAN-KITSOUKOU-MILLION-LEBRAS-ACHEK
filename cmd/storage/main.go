@@ -9,7 +9,7 @@ import (
 	"imt-atlantique.project.group.fr/meteo-airport/internal/storage"
 )
 
-func main() {
+func createMQTTClient() *mqtt.Client {
 	config, configErr := mqtt.RetrieveMQTTPropertiesFromYaml("./config/hiveClientConfig.yaml")
 	if configErr != nil {
 		panic(configErr)
@@ -21,8 +21,10 @@ func main() {
 		panic(connexionErr)
 	}
 
-	defer client.Disconnect()
+	return client
+}
 
+func createManager(client *mqtt.Client) *storage.Manager {
 	manager := storage.NewManager(client)
 	csvSettings := storage.CSVSettings{
 		PathDirectory: "./data",
@@ -49,17 +51,10 @@ func main() {
 		manager.AddRecorder(sensor.Temperature, influxRecorder, 1)
 	}
 
-	if err := manager.Start(); err != nil {
-		panic(err)
-	}
+	return manager
+}
 
-	defer func(manager *storage.Manager) {
-		err := manager.Close()
-		if err != nil {
-			panic(err)
-		}
-	}(manager)
-
+func publishMeasurements(client *mqtt.Client) {
 	measurement := sensor.Measurement{
 		SensorID:  1,
 		AirportID: "NTE",
@@ -72,10 +67,31 @@ func main() {
 	for {
 		measurement.Timestamp = time.Now()
 		measurement.Value = measurement.Value + rand.Float64() - 0.5
+
 		if err := measurement.PublishOnMQTT(1, false, client); err != nil {
 			panic(err)
 		}
 
 		time.Sleep(1 * time.Second)
 	}
+}
+
+func main() {
+	client := createMQTTClient()
+	defer client.Disconnect()
+
+	manager := createManager(client)
+
+	if err := manager.Start(); err != nil {
+		panic(err)
+	}
+
+	defer func(manager *storage.Manager) {
+		err := manager.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(manager)
+
+	publishMeasurements(client)
 }
