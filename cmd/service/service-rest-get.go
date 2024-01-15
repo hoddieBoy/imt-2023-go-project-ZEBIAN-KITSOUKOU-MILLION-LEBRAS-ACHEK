@@ -93,10 +93,19 @@ func AverageMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request
 	log.Info("This is the average measurement in a day handler")
 
 	var types []string
-	types = r.URL.Query()["types"]
+	t := r.URL.Query().Get("types")
+
+	if t == "" {
+		types = []string{"temperature", "humidity", "pressure", "windSpeed"}
+	} else {
+		types = strings.Split(t, ",")
+	}
+
+	if len(types) == 0 {
+		types = append(types, "temperature", "humidity", "pressure", "windSpeed")
+	}
+
 	day := r.URL.Query().Get("day")
-	log.Info("day: %s", day)
-	log.Info("types: %s", types)
 
 	client := influxdb2.NewClient("http://localhost:8086",
 		"upvBeRD7IGz2JkRYkF16F4PK7g-uciplnKnwMnLnFqk_5AAoT-dcUz_fWoeL0f6iy3enhBS-N0tLhwfZ0ILZiA==")
@@ -105,8 +114,6 @@ func AverageMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request
 	for _, t := range types {
 		typeF = append(typeF, fmt.Sprintf(`r._measurement == "%s"`, t))
 	}
-	log.Info("typeF: %s", typeF)
-	log.Info("typeF: %s", strings.Join(typeF, " || "))
 
 	fluxQuery := fmt.Sprintf(`from(bucket: "metrics")
 	|> range(start: %s, stop: %s)
@@ -115,7 +122,7 @@ func AverageMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request
 	|> aggregateWindow(every: 24h, fn: mean, createEmpty: false)
 	|> group(columns: ["_measurement"])
 	|> yield(name: "mean")
-	`, day, day+"T23:59:59Z", strings.Join(typeF, " || "))
+	`, day, day+"T23:59:59Z", strings.Join(typeF, " or "))
 	log.Info("fluxQuery: %s", fluxQuery)
 
 	// get QueryTableResult
@@ -132,7 +139,7 @@ func AverageMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request
 			log.Info("table: %s", result.TableMetadata().String())
 		}
 		// Access data
-		log.Info("value: %v", result.Record().Value())
+		log.Info("value: %v", result.Record())
 		data = append(data, map[string]interface{}{
 			"value": result.Record().Value(),
 			"time":  result.Record().Time().String(),
