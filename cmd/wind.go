@@ -47,7 +47,7 @@ func main() {
 	maximalValue := 120.0
 
 	for {
-		actualWind := windDataGeneration(actualWind, minimalValue, maximalValue)
+		actualWind = windDataGeneration(actualWind, minimalValue, maximalValue)
 		publishData(actualWind, sensor)
 		time.Sleep(5 * time.Second)
 	}
