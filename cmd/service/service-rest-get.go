@@ -12,7 +12,11 @@ import (
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 )
 
-type MeasurementHandler struct {
+var newUrl = "http://localhost:8081/api/v1/measurements"
+
+func RedirectHomeHandler(w http.ResponseWriter, r *http.Request) {
+	log.Info("This is the redirect home handler")
+	http.Redirect(w, r, newUrl, http.StatusSeeOther)
 }
 
 func HomeHandler(writer http.ResponseWriter, request *http.Request) {
@@ -176,8 +180,11 @@ func AverageMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request
 
 func main() {
 	router := mux.NewRouter()
-	// TODO: add redirect to HomeHandler
+
 	log.Info("Connected to the server on port 8081 !")
+	router.HandleFunc("/", RedirectHomeHandler)
+	router.HandleFunc("/api", RedirectHomeHandler)
+	router.HandleFunc("/api/v1", RedirectHomeHandler)
 	router.HandleFunc("/api/v1/measurements", HomeHandler)
 	router.HandleFunc("/api/v1/measurements/interval/{type}/", MeasurementIntervalHandler)
 	router.HandleFunc("/api/v1/measurements/mean/", AverageMeasurementInADayHandler)
