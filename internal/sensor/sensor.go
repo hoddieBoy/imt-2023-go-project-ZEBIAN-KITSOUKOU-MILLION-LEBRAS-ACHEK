@@ -47,7 +47,8 @@ func (s *Sensor) GenerateData(sensorID int64, airportID string, sensorType Measu
 }
 
 func (s *Sensor) PublishData() error {
-	err := s.data.PublishOnMQTT(2, false, s.client)
+	var qos byte = 2
+	err := s.data.PublishOnMQTT(qos, false, s.client)
 
 	if err != nil {
 		log.Error(fmt.Sprintf("Failed to publish data to client: %v", err))
