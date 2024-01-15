@@ -45,9 +45,5 @@ func LoadDefaultAlertConfig() (*Alert, error) {
 	var cfg Alert
 	err := LoadDefaultConfig(&cfg)
 
-	if err != nil {
-		return nil, err
-	}
-
-	return &cfg, nil
+	return &cfg, err
 }

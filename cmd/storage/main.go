@@ -33,24 +33,24 @@ func createManager(storageConfig *config.Storage) *storage.Manager {
 
 	manager := storage.NewManager(client)
 
-	for measurement, storageConfigs := range storageConfig.Settings {
-		if storageConfigs.InfluxDB != (config.InfluxDBSettings{}) {
+	for measurement, setting := range storageConfig.Settings {
+		if setting.InfluxDB != (config.InfluxDBSettings{}) {
 			log.Info("Registering InfluxDB recorder for measurement %s", measurement)
-			log.Info("InfluxDB settings: %v", storageConfigs.InfluxDB)
-			influxDBRecorder, _ := storage.NewInfluxDBRecorder(storageConfigs.InfluxDB)
-			manager.AddRecorder(sensor.MeasurementType(measurement), influxDBRecorder, 0)
+			log.Info("InfluxDB settings: %v", setting.InfluxDB)
+			influxDBRecorder, _ := storage.NewInfluxDBRecorder(setting.InfluxDB)
+			manager.AddRecorder(sensor.MeasurementType(measurement), influxDBRecorder, setting.Qos)
 		}
 
-		if storageConfigs.CSV != (config.CSVSettings{}) {
+		if setting.CSV != (config.CSVSettings{}) {
 			log.Info("Registering CSV recorder for measurement %s", measurement)
 
-			csvRecorder, _ := storage.NewCSVRecorder(storageConfigs.CSV)
+			csvRecorder, _ := storage.NewCSVRecorder(setting.CSV)
 			manager.AddRecorder(sensor.MeasurementType(measurement), csvRecorder, 0)
 
-			if _, err := os.Stat(storageConfigs.CSV.PathDirectory); os.IsNotExist(err) {
+			if _, err := os.Stat(setting.CSV.PathDirectory); os.IsNotExist(err) {
 				log.Info("Creating the directory for saving the CSV files...")
 
-				err := os.Mkdir(storageConfigs.CSV.PathDirectory, 0755)
+				err := os.Mkdir(setting.CSV.PathDirectory, 0755)
 
 				if err != nil {
 					log.Error("Error creating the directory for saving the CSV files: %v", err)

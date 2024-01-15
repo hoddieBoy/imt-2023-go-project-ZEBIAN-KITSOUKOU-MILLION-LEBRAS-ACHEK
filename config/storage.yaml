@@ -9,6 +9,7 @@ settings:
       path_directory: "./data"
       separator: ';'
       time_format: "2006-01-02T15:04:05Z07:00"
+    qos: 0
 
   humidity:
     influxdb:
@@ -16,6 +17,7 @@ settings:
       token: "9o53z0vBFzgb1w9f-icJgdg8gOltOTY9AwpXaUeimPxbiJ2md5ys32K1hTWf82ZV03oMFL2XM_PL3sXjhs1rRg=="
       bucket: "metrics"
       organization: "meteo-airport"
+    qos: 0
 
 mqtt:
   protocol: "tcp"

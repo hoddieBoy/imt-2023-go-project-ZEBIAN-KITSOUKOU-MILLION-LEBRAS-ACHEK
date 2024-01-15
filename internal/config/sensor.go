@@ -52,9 +52,5 @@ func LoadDefaultSensorConfig() (*SensorConfig, error) {
 	var cfg SensorConfig
 	err := LoadDefaultConfig(&cfg)
 
-	if err != nil {
-		return nil, err
-	}
-
-	return &cfg, nil
+	return &cfg, err
 }

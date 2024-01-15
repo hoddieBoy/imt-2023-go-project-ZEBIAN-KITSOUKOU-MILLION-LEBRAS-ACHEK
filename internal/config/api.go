@@ -31,9 +31,5 @@ func LoadDefaultAPIConfig() (*API, error) {
 	var cfg API
 	err := LoadDefaultConfig(&cfg)
 
-	if err != nil {
-		return nil, err
-	}
-
-	return &cfg, nil
+	return &cfg, err
 }

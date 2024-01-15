@@ -10,6 +10,7 @@ type Storage struct {
 	Settings map[string]struct {
 		InfluxDB InfluxDBSettings `yaml:"influxdb"`
 		CSV      CSVSettings      `yaml:"csv"`
+		Qos      byte
 	} `yaml:"settings"`
 	MQTT mqtt.Config
 }
@@ -35,6 +36,10 @@ func (c *Storage) Validate() error {
 	for _, settings := range c.Settings {
 		if settings.InfluxDB == (InfluxDBSettings{}) && settings.CSV == (CSVSettings{}) {
 			return fmt.Errorf("influxdb and csv settings are empty")
+		}
+
+		if settings.Qos < 0 || settings.Qos > 2 {
+			return fmt.Errorf("qos must be between 0 and 2")
 		}
 
 		if settings.InfluxDB != (InfluxDBSettings{}) {
