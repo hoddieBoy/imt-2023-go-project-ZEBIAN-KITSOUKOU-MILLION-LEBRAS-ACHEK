@@ -33,7 +33,7 @@ func main() {
 func handleAlertListening(client *mqtt.Client, alerts map[string]config.SensorAlert) {
 	for sensorType, alert := range alerts {
 		err := client.Subscribe(alert.IncomingTopic,
-			1,
+			alert.IncomingQos,
 			checkValidRangeOnReception(client,
 				alert,
 				"Alert, "+sensorType+" sensor out of range"))
@@ -52,7 +52,7 @@ func checkValidRangeOnReception(
 	return func(mqttClient pahoMqtt.Client, message pahoMqtt.Message) {
 		sensorValue := getJSONValueAsIntFromMessage(message)
 		if !(sensorAlert.LowerBound <= sensorValue && sensorValue <= sensorAlert.HigherBound) {
-			err := helperClient.Publish(sensorAlert.OutgoingTopic, 1, false, alertMessage)
+			err := helperClient.Publish(sensorAlert.OutgoingTopic, sensorAlert.OutgoingQos, false, alertMessage)
 			if err != nil {
 				panic(err)
 			}

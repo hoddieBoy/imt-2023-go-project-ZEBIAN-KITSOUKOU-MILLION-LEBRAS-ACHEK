@@ -15,14 +15,18 @@ type SensorConfig struct {
 		TimeFormat string `yaml:"time_format"`
 	} `yaml:"sensor"`
 	Broker struct {
-		Client       *mqtt.Config `yaml:"client"`
-		PublishTopic string       `yaml:"publish_topic"`
+		Client mqtt.Config `yaml:"client"`
+		Qos    byte        `yaml:"qos"`
 	} `yaml:"broker"`
 }
 
 func (c *SensorConfig) Validate() error {
 	if err := c.Broker.Client.Validate(); err != nil {
 		return err
+	}
+
+	if c.Broker.Qos < 0 || c.Broker.Qos > 2 {
+		return fmt.Errorf("qos must be between 0 and 2")
 	}
 
 	if c.Setting.AirportID == "" {

@@ -4,51 +4,49 @@ import (
 	"fmt"
 	"time"
 
+	"imt-atlantique.project.group.fr/meteo-airport/internal/config"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
 )
 
 type Sensor struct {
 	client *mqtt.Client
-	data   Measurement
+	config *config.SensorConfig
+	last   *Measurement
 }
 
-func (s *Sensor) InitializeSensor() error {
-	config, err := mqtt.RetrieveMQTTPropertiesFromYaml("./config/hiveClientConfig.yaml")
+func InitializeSensor(sensorType MeasurementType) (*Sensor, error) {
+	cfg, err := config.LoadDefaultSensorConfig()
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	client := mqtt.NewClient(config, "clientId")
+	client := mqtt.NewClient(&cfg.Broker.Client)
 
-	err = client.Connect()
-
-	if err != nil {
-		log.Error(fmt.Sprintf("Cannot connect to client: %v", err))
-		return err
+	if err := client.Connect(); err != nil {
+		return nil, err
 	}
 
-	s.client = client
-
-	return nil
+	return &Sensor{
+		client: client,
+		config: cfg,
+		last: &Measurement{
+			SensorID:  cfg.Setting.SensorID,
+			AirportID: cfg.Setting.AirportID,
+			Type:      sensorType,
+			Unit:      cfg.Setting.Unit,
+		},
+	}, nil
 }
 
-func (s *Sensor) GenerateData(sensorID int64, airportID string, sensorType MeasurementType,
-	value float64, unit string, timestamp time.Time) {
-	s.data = Measurement{
-		SensorID:  sensorID,
-		AirportID: airportID,
-		Type:      sensorType,
-		Value:     value,
-		Unit:      unit,
-		Timestamp: timestamp,
-	}
+func (s *Sensor) GenerateData(value float64) {
+	s.last.Value = value
+	s.last.Timestamp = time.Now()
 }
 
 func (s *Sensor) PublishData() error {
-	var qos byte = 2
-	err := s.data.PublishOnMQTT(qos, false, s.client)
+	err := s.last.PublishOnMQTT(s.config.Broker.Qos, false, s.client)
 
 	if err != nil {
 		log.Error(fmt.Sprintf("Failed to publish data to client: %v", err))

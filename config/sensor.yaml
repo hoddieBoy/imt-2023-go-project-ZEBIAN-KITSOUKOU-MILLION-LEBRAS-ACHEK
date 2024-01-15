@@ -13,4 +13,4 @@ broker:
     username: "admin"
     password: "anotherSecretPassword"
     client_id: "temperature-sensor-CDG-1"
-  publish_topic: "airport/CDG/temperature"
+  qos: 1

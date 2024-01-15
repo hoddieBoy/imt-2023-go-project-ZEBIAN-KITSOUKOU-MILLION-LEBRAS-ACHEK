@@ -12,17 +12,6 @@ import (
 	"imt-atlantique.project.group.fr/meteo-airport/internal/storage"
 )
 
-func createMQTTClient(config *config.Storage, clientID ...string) *mqtt.Client {
-	client := mqtt.NewClient(&config.MQTT, clientID...)
-
-	if connexionErr := client.Connect(); connexionErr != nil {
-		log.Error("Error connecting to MQTT broker: %v", connexionErr)
-		os.Exit(1)
-	}
-
-	return client
-}
-
 func createManager(storageConfig *config.Storage) *storage.Manager {
 	client := mqtt.NewClient(&storageConfig.MQTT)
 
@@ -119,7 +108,5 @@ func main() {
 		}
 	}(manager)
 
-	client := createMQTTClient(defaultStorageConfig, "sensor-1")
-
-	publishMeasurements(client)
+	select {}
 }

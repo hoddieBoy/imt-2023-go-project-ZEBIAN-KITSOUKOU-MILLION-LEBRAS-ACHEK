@@ -16,6 +16,8 @@ type SensorAlert struct {
 	OutgoingTopic string `yaml:"outgoing_topic"`
 	LowerBound    int    `yaml:"lower_bound"`
 	HigherBound   int    `yaml:"higher_bound"`
+	IncomingQos   byte   `yaml:"incoming_qos"`
+	OutgoingQos   byte   `yaml:"outgoing_qos"`
 }
 
 func (c *Alert) Validate() error {
