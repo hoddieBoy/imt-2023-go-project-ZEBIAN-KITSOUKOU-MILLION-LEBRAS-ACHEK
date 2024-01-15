@@ -10,12 +10,12 @@ import (
 )
 
 func windDataGeneration(actualWind float64, min float64, max float64) float64 {
-
-	actualWind = actualWind + (rand.Float64()-rand.Float64())*5
+	actualWind += (rand.Float64() - rand.Float64()) * 5
 
 	if actualWind < min {
 		actualWind = min
 	}
+
 	if actualWind > max {
 		actualWind = max
 	}
@@ -26,6 +26,7 @@ func windDataGeneration(actualWind float64, min float64, max float64) float64 {
 func publishData(actualWind float64, sensor sensor.Sensor) {
 	sensor.GenerateData(2, "CGD", "windSpeed",
 		actualWind, "Km/h", time.Now())
+
 	err := sensor.PublishData()
 
 	if err != nil {

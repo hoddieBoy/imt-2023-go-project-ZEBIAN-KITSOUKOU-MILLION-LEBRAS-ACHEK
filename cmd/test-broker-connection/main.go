@@ -25,8 +25,6 @@ func main() {
 		if err := client.Publish("test", 0, false, "Hello World"); err != nil {
 			panic(err)
 		}
-		for true {
-
-		}
+		select {}
 	}
 }
