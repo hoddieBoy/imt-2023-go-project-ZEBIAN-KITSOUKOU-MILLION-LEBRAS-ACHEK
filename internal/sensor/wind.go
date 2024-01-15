@@ -2,14 +2,14 @@ package sensor
 
 import (
 	"fmt"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
 	"math/rand"
 	"time"
 
-	mqtt_helper "imt-atlantique.project.group.fr/meteo-airport/internal/mqtt_helper"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 )
 
 func windDataGeneration(actualWind float64, min float64, max float64) float64 {
+
 	actualWind = actualWind + (rand.Float64()-rand.Float64())*5
 
 	if actualWind < min {
@@ -22,44 +22,31 @@ func windDataGeneration(actualWind float64, min float64, max float64) float64 {
 	return actualWind
 }
 
-func publishData(actualWind float64, client *mqtt_helper.MQTTClient) {
+func publishData(actualWind float64, sensor Sensor) {
+	sensor.GenerateData(2, "CGD", MeasurementType("windSpeed"),
+		actualWind, "Km/h", time.Now())
+	err := sensor.PublishData()
 
-	data := Measurement{
-		SensorID:  2,
-		AirportID: "CDG",
-		Type:      "Wind speed",
-		Value:     actualWind,
-		Unit:      "Km/h",
-		Timestamp: time.Now(),
-	}
-
-	err := data.PublishOnMQTT(2, false, client)
 	if err != nil {
-		logutil.Error(fmt.Sprintf("Failed to publish data to client: %v", err))
+		log.Error(fmt.Sprintf("Failed to publish data to client: %v", err))
 	}
 }
 
 func main() {
-	if config, err := mqtt_helper.RetrieveMQTTPropertiesFromYaml("./config/hiveClientConfig.yaml"); err != nil {
+	sensor := Sensor{}
+	err := sensor.InitializeSensor()
+
+	if err != nil {
 		panic(err)
-	} else {
-		client := mqtt_helper.NewClient(config, "clientId")
+	}
 
-		err := client.Connect()
-		if err != nil {
-			logutil.Error(fmt.Sprintf("Cannot connect to client: %v", err))
-		}
+	actualWind := 40.0
+	minimalValue := 10.0
+	maximalValue := 120.0
 
-		actualWind := 40.0
-		minimalValue := 10.0
-		maximalValue := 120.0
-
-		for {
-
-			actualWind := windDataGeneration(actualWind, minimalValue, maximalValue)
-			publishData(actualWind, client)
-
-			time.Sleep(5 * time.Second)
-		}
+	for {
+		actualWind := windDataGeneration(actualWind, minimalValue, maximalValue)
+		publishData(actualWind, sensor)
+		time.Sleep(5 * time.Second)
 	}
 }
