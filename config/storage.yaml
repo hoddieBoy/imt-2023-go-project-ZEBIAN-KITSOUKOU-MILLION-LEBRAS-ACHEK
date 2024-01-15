@@ -1,4 +1,4 @@
-storages:
+settings:
   temperature:
     influxdb:
       url: "http://localhost:8086"
@@ -6,7 +6,7 @@ storages:
       bucket: "metrics"
       organization: "meteo-airport"
     csv:
-      path_directory: "/path/to/directory"
+      path_directory: "./data"
       separator: ';'
       time_format: "2006-01-02T15:04:05Z07:00"
 
@@ -23,4 +23,4 @@ mqtt:
   port: 1883
   username: "admin"
   password: "anotherSecretPassword"
-  client_id: "storage-manager-weather-sensors"
+  client_id: "storage-manager-weather-sensors-2"

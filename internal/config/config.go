@@ -12,7 +12,11 @@ type Config interface {
 	Validate() error
 }
 
-var defaultConfigFileName = "config.yaml"
+var defaultConfigFileName = "config/config.yaml"
+
+func SetDefaultConfigFileName(name string) {
+	defaultConfigFileName = name
+}
 
 func RetrievePropertiesFromYaml(filePath string, cfg Config) error {
 	file, err := os.ReadFile(filePath)

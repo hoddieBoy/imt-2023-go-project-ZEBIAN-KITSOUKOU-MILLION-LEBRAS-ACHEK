@@ -10,7 +10,11 @@ type Client struct {
 	config *Config
 }
 
-func NewClient(config *Config) *Client {
+func NewClient(config *Config, clientID ...string) *Client {
+	if len(clientID) > 0 {
+		config.ClientID = clientID[0]
+	}
+
 	opts := mqtt.NewClientOptions().AddBroker(config.GetServerAddress()).SetClientID(config.ClientID)
 
 	if config.Username != "" {

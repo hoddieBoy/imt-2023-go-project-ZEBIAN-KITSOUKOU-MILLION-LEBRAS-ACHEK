@@ -24,9 +24,7 @@ func (c *Alert) Validate() error {
 		return err
 	}
 
-	// Check if the incoming topic is valid
 	for _, sensor := range c.SensorsAlert {
-		// Check if the sensor type is valid
 		if sensor.IncomingTopic == "" {
 			return fmt.Errorf("incoming topic is empty")
 		}

@@ -9,7 +9,6 @@ import (
 	"sync"
 
 	"imt-atlantique.project.group.fr/meteo-airport/internal/config"
-
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 
@@ -28,9 +27,6 @@ func NewCSVRecorder(settings config.CSVSettings) (*CSVRecorder, error) {
 }
 
 func (r *CSVRecorder) setWriter(filename string) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
 	// Open or create file
 	file, err := os.OpenFile(filepath.Join(r.Settings.PathDirectory, filename), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -39,7 +35,6 @@ func (r *CSVRecorder) setWriter(filename string) error {
 
 	r.file = file
 	r.writer = csv.NewWriter(file)
-
 	// Write header if file is empty
 	if fileInfo, err := file.Stat(); err == nil && fileInfo.Size() == 0 {
 		if err := r.writer.Write([]string{sensor.MeasurementFieldNames(r.Settings.Separator)}); err != nil {
