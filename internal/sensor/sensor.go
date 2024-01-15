@@ -2,9 +2,10 @@ package sensor
 
 import (
 	"fmt"
+	"time"
+
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
-	"time"
 )
 
 type Sensor struct {
