@@ -140,7 +140,18 @@ func AverageMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request
 		}
 		// Access data
 		log.Info("value: %v", result.Record())
+		var measurementType string
+		if result.Record().Measurement() == "temperature" {
+			measurementType = "temperature"
+		} else if result.Record().Measurement() == "humidity" {
+			measurementType = "humidity"
+		} else if result.Record().Measurement() == "pressure" {
+			measurementType = "pressure"
+		} else if result.Record().Measurement() == "windSpeed" {
+			measurementType = "windSpeed"
+		}
 		data = append(data, map[string]interface{}{
+			"type":  measurementType,
 			"value": result.Record().Value(),
 			"time":  result.Record().Time().String(),
 			"unit":  result.Record().Field(),
@@ -148,9 +159,7 @@ func AverageMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request
 	}
 
 	jsonData, err := json.Marshal(map[string]interface{}{
-		"day":   day,
-		"types": types,
-		"data":  data,
+		"data": data,
 	})
 
 	if err != nil {
