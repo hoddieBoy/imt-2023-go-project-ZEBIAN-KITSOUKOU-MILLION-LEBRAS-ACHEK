@@ -13,20 +13,20 @@ type Sensor struct {
 }
 
 func (s *Sensor) InitializeSensor() error {
-	if config, err := mqtt_helper.RetrieveMQTTPropertiesFromYaml("./config/hiveClientConfig.yaml"); err != nil {
+	config, err := mqtt_helper.RetrieveMQTTPropertiesFromYaml("./config/hiveClientConfig.yaml")
+	if err != nil {
 		panic(err)
-	} else {
-		client := mqtt_helper.NewClient(config, "clientId")
-
-		err := client.Connect()
-		if err != nil {
-			logutil.Error(fmt.Sprintf("Cannot connect to client: %v", err))
-			return err
-		}
-
-		s.client = client
-		return nil
 	}
+	client := mqtt_helper.NewClient(config, "clientId")
+
+	err = client.Connect()
+	if err != nil {
+		logutil.Error(fmt.Sprintf("Cannot connect to client: %v", err))
+		return err
+	}
+
+	s.client = client
+	return nil
 }
 
 func (s *Sensor) GenerateData(sensorId int64, airportId string, sensorType MeasurementType, value float64, unit string, timestamp time.Time) {
