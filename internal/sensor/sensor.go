@@ -20,16 +20,23 @@ func (s *Sensor) InitializeSensor() error {
 	client := mqtt.NewClient(config, "clientId")
 
 	err = client.Connect()
+
 	if err != nil {
 		log.Error(fmt.Sprintf("Cannot connect to client: %v", err))
 		return err
 	}
 
 	s.client = client
+
 	return nil
 }
 
-func (s *Sensor) GenerateData(sensorId int64, airportId string, sensorType MeasurementType, value float64, unit string, timestamp time.Time) {
+func (s *Sensor) GenerateData(sensorId int64,
+	airportId string,
+	sensorType MeasurementType,
+	value float64,
+	unit string,
+	timestamp time.Time) {
 
 	s.data = Measurement{
 		SensorID:  sensorId,
@@ -39,7 +46,6 @@ func (s *Sensor) GenerateData(sensorId int64, airportId string, sensorType Measu
 		Unit:      unit,
 		Timestamp: timestamp,
 	}
-
 }
 
 func (s *Sensor) PublishData() error {
