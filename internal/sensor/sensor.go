@@ -2,26 +2,26 @@ package sensor
 
 import (
 	"fmt"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt_helper"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
 	"time"
 )
 
 type Sensor struct {
-	client *mqtt_helper.MQTTClient
+	client *mqtt.Client
 	data   Measurement
 }
 
 func (s *Sensor) InitializeSensor() error {
-	config, err := mqtt_helper.RetrieveMQTTPropertiesFromYaml("./config/hiveClientConfig.yaml")
+	config, err := mqtt.RetrieveMQTTPropertiesFromYaml("./config/hiveClientConfig.yaml")
 	if err != nil {
 		panic(err)
 	}
-	client := mqtt_helper.NewClient(config, "clientId")
+	client := mqtt.NewClient(config, "clientId")
 
 	err = client.Connect()
 	if err != nil {
-		logutil.Error(fmt.Sprintf("Cannot connect to client: %v", err))
+		log.Error(fmt.Sprintf("Cannot connect to client: %v", err))
 		return err
 	}
 
@@ -45,7 +45,7 @@ func (s *Sensor) GenerateData(sensorId int64, airportId string, sensorType Measu
 func (s *Sensor) PublishData() error {
 	err := s.data.PublishOnMQTT(2, false, s.client)
 	if err != nil {
-		logutil.Error(fmt.Sprintf("Failed to publish data to client: %v", err))
+		log.Error(fmt.Sprintf("Failed to publish data to client: %v", err))
 		return err
 	}
 
