@@ -2,44 +2,47 @@ package storage
 
 import (
 	"fmt"
-	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt_helper"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 	"sync"
+
+	pahoMqtt "github.com/eclipse/paho.mqtt.golang"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 
-// Manager handles subscriptions and manages recorders
+// Manager struct handles subscriptions and manages recorders
 type Manager struct {
 	recordersMutex sync.RWMutex
-	recorders      map[sensor.MeasurementType]map[Recorder]bool
-	mqttClient     *mqtt_helper.MQTTClient
+	recorders      map[sensor.MeasurementType]map[Recorder]byte
+	mqttClient     *mqtt.Client
 	closeChan      chan struct{}
+	wg             sync.WaitGroup
 }
 
-func NewManager(mqttClient *mqtt_helper.MQTTClient) *Manager {
+func NewManager(mqttClient *mqtt.Client) *Manager {
 	return &Manager{
-		recorders:  make(map[sensor.MeasurementType]map[Recorder]bool),
+		recorders:  make(map[sensor.MeasurementType]map[Recorder]byte),
 		mqttClient: mqttClient,
 		closeChan:  make(chan struct{}),
+		wg:         sync.WaitGroup{},
 	}
 }
 
-func (s *Manager) AddRecorder(sensorType sensor.MeasurementType, recorder Recorder) {
+func (s *Manager) AddRecorder(sensorType sensor.MeasurementType, recorder Recorder, qos byte) {
 	s.recordersMutex.Lock()
-	defer s.recordersMutex.Unlock()
-
 	if _, ok := s.recorders[sensorType]; !ok {
-		s.recorders[sensorType] = make(map[Recorder]bool)
+		s.recorders[sensorType] = make(map[Recorder]byte)
 	}
-	s.recorders[sensorType][recorder] = true
+
+	s.recorders[sensorType][recorder] = qos
+	s.recordersMutex.Unlock()
 }
 
 func (s *Manager) SubscribeToSensor(sensorType sensor.MeasurementType, qos byte) error {
-	return s.mqttClient.Subscribe(sensorType.GetTopic(), qos, func(client mqtt.Client, message mqtt.Message) {
+	return s.mqttClient.Subscribe(sensorType.GetTopic(), qos, func(client pahoMqtt.Client, message pahoMqtt.Message) {
 		measurement, err := sensor.FromJSON(message.Payload())
 		if err != nil {
-			logutil.Warn("Error unmarshalling measurement from JSON: %v", err)
+			log.Warn("Error unmarshalling measurement from JSON: %v", err)
 			return
 		}
 
@@ -47,10 +50,12 @@ func (s *Manager) SubscribeToSensor(sensorType sensor.MeasurementType, qos byte)
 		defer s.recordersMutex.RUnlock()
 
 		for recorder := range s.recorders[sensorType] {
+			s.wg.Add(1)
 			go func(rec Recorder, meas *sensor.Measurement) {
 				if err := rec.Record(meas); err != nil {
-					logutil.Warn("Error recording measurement of type %s with recorder %v: %v", sensorType, rec, err)
+					log.Warn("Error recording measurement of type %s with recorder %v: %v", sensorType, rec, err)
 				}
+				s.wg.Done()
 			}(recorder, measurement)
 		}
 	})
@@ -58,6 +63,8 @@ func (s *Manager) SubscribeToSensor(sensorType sensor.MeasurementType, qos byte)
 
 func (s *Manager) Close() error {
 	close(s.closeChan)
+
+	s.wg.Wait()
 
 	var closeErrors []error
 
@@ -75,16 +82,21 @@ func (s *Manager) Close() error {
 	if len(closeErrors) > 0 {
 		return fmt.Errorf("encountered errors while closing recorders: %v", closeErrors)
 	}
+
 	return nil
 }
 
-func (s *Manager) Start() {
+func (s *Manager) Start() error {
 	s.recordersMutex.RLock()
 	defer s.recordersMutex.RUnlock()
 
-	for sensorType := range s.recorders {
-		if err := s.SubscribeToSensor(sensorType, 1); err != nil {
-			logutil.Error("Failed to subscribe to sensor type %s: %v", sensorType, err)
+	for sensorType, recorders := range s.recorders {
+		for _, qos := range recorders {
+			if err := s.SubscribeToSensor(sensorType, qos); err != nil {
+				return fmt.Errorf("failed to subscribe to sensor type %s: %v", sensorType, err)
+			}
 		}
 	}
+
+	return nil
 }
