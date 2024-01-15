@@ -1,4 +1,4 @@
-package config_helper
+package config
 
 import (
 	"fmt"
@@ -51,6 +51,7 @@ func (c *SensorConfig) Validate() error {
 func LoadDefaultSensorConfig() (*SensorConfig, error) {
 	var cfg SensorConfig
 	err := LoadDefaultConfig(&cfg)
+
 	if err != nil {
 		return nil, err
 	}

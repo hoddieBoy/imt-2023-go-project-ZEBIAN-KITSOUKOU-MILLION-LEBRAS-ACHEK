@@ -1,4 +1,4 @@
-package config_helper
+package config
 
 import (
 	"fmt"
@@ -16,13 +16,17 @@ var defaultConfigFileName = "config.yaml"
 
 func RetrievePropertiesFromYaml(filePath string, cfg Config) error {
 	file, err := os.ReadFile(filePath)
+
 	if err != nil {
 		return err
 	}
+
 	err = yaml.Unmarshal(file, cfg)
+
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 

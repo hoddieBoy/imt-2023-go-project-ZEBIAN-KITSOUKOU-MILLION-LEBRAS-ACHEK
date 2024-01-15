@@ -1,4 +1,4 @@
-package config_helper
+package config
 
 import (
 	"fmt"
@@ -6,12 +6,12 @@ import (
 	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
 )
 
-type StorageConfig struct {
-	Storages map[string]Storage
+type Storage struct {
+	Settings map[string]Setting
 	MQTT     mqtt.Config
 }
 
-type Storage struct {
+type Setting struct {
 	InfluxDB InfluxDBSettings `yaml:"influxdb"`
 	CSV      CSVSettings      `yaml:"csv"`
 }
@@ -29,8 +29,7 @@ type CSVSettings struct {
 	TimeFormat    string `yaml:"time_format"`
 }
 
-func (c *Storage) Validate() error {
-
+func (c *Setting) Validate() error {
 	if c.InfluxDB == (InfluxDBSettings{}) && c.CSV == (CSVSettings{}) {
 		return fmt.Errorf("influxdb and csv settings are empty")
 	}
@@ -50,8 +49,8 @@ func (c *Storage) Validate() error {
 	return nil
 }
 
-func (c *StorageConfig) Validate() error {
-	for _, storages := range c.Storages {
+func (c *Storage) Validate() error {
+	for _, storages := range c.Settings {
 		// For each measurement, check if the storage is valid
 		if err := storages.Validate(); err != nil {
 			return err
@@ -101,9 +100,10 @@ func (c *CSVSettings) Validate() error {
 	return nil
 }
 
-func LoadDefaultStorageConfig() (*StorageConfig, error) {
-	cfg := &StorageConfig{}
+func LoadDefaultStorageConfig() (*Storage, error) {
+	cfg := &Storage{}
 	err := LoadDefaultConfig(cfg)
+
 	if err != nil {
 		return nil, err
 	}

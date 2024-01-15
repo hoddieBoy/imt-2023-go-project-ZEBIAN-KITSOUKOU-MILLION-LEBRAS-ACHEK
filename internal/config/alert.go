@@ -1,4 +1,4 @@
-package config_helper
+package config
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
 )
 
-type AlertConfig struct {
+type Alert struct {
 	Broker       mqtt.Config            `yaml:"broker"`
 	SensorsAlert map[string]SensorAlert `yaml:"sensors_alert"`
 }
@@ -18,7 +18,7 @@ type SensorAlert struct {
 	HigherBound   int    `yaml:"higher_bound"`
 }
 
-func (c *AlertConfig) Validate() error {
+func (c *Alert) Validate() error {
 	// Check if the MQTTConfig is valid
 	if err := c.Broker.Validate(); err != nil {
 		return err
@@ -43,9 +43,10 @@ func (c *AlertConfig) Validate() error {
 	return nil
 }
 
-func LoadDefaultAlertConfig() (*AlertConfig, error) {
-	var cfg AlertConfig
+func LoadDefaultAlertConfig() (*Alert, error) {
+	var cfg Alert
 	err := LoadDefaultConfig(&cfg)
+
 	if err != nil {
 		return nil, err
 	}

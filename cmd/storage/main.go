@@ -5,15 +5,14 @@ import (
 	"os"
 	"time"
 
-	"imt-atlantique.project.group.fr/meteo-airport/internal/config_helper"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/config"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/storage"
 )
 
-func createMQTTClient(config *config_helper.StorageConfig) *mqtt.Client {
-
+func createMQTTClient(config *config.Storage) *mqtt.Client {
 	client := mqtt.NewClient(&config.MQTT)
 
 	if connexionErr := client.Connect(); connexionErr != nil {
@@ -24,8 +23,8 @@ func createMQTTClient(config *config_helper.StorageConfig) *mqtt.Client {
 	return client
 }
 
-func createManager(config *config_helper.StorageConfig) *storage.Manager {
-	client := mqtt.NewClient(&config.MQTT)
+func createManager(storageConfig *config.Storage) *storage.Manager {
+	client := mqtt.NewClient(&storageConfig.MQTT)
 
 	if connexionErr := client.Connect(); connexionErr != nil {
 		log.Error("Error connecting to MQTT broker: %v", connexionErr)
@@ -33,20 +32,23 @@ func createManager(config *config_helper.StorageConfig) *storage.Manager {
 	}
 
 	manager := storage.NewManager(client)
-	for measurement, storageConfigs := range config.Storages {
 
-		if storageConfigs.InfluxDB != (config_helper.InfluxDBSettings{}) {
+	for measurement, storageConfigs := range storageConfig.Settings {
+		if storageConfigs.InfluxDB != (config.InfluxDBSettings{}) {
 			log.Info("Registering InfluxDB recorder for measurement %s", measurement)
+
 			influxDBRecorder, _ := storage.NewInfluxDBRecorder(storageConfigs.InfluxDB)
 			manager.AddRecorder(sensor.MeasurementType(measurement), influxDBRecorder, 1)
 		}
 
-		if storageConfigs.CSV != (config_helper.CSVSettings{}) {
+		if storageConfigs.CSV != (config.CSVSettings{}) {
 			log.Info("Registering CSV recorder for measurement %s", measurement)
+
 			csvRecorder, _ := storage.NewCSVRecorder(storageConfigs.CSV)
 			manager.AddRecorder(sensor.MeasurementType(measurement), csvRecorder, 1)
 		}
 	}
+
 	return manager
 }
 
@@ -73,16 +75,18 @@ func publishMeasurements(client *mqtt.Client) {
 }
 
 func main() {
-	log.Info("Loading config...")
-	config, configErr := config_helper.LoadDefaultStorageConfig()
+	log.Info("Loading defaultStorageConfig...")
+
+	defaultStorageConfig, configErr := config.LoadDefaultStorageConfig()
 
 	if configErr != nil {
-		log.Error("Error loading config: %v", configErr)
+		log.Error("Error loading defaultStorageConfig: %v", configErr)
 		os.Exit(1)
 	}
 
 	log.Info("Starting storage manager...")
-	manager := createManager(config)
+
+	manager := createManager(defaultStorageConfig)
 
 	if err := manager.Start(); err != nil {
 		log.Error("Error starting storage manager: %v", err)
@@ -96,7 +100,7 @@ func main() {
 		}
 	}(manager)
 
-	client := createMQTTClient(config)
+	client := createMQTTClient(defaultStorageConfig)
 
 	publishMeasurements(client)
 }

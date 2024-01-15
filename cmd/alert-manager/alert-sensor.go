@@ -6,32 +6,31 @@ import (
 	"os"
 
 	pahoMqtt "github.com/eclipse/paho.mqtt.golang"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/config_helper"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/config"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
 )
 
 func main() {
-	config, err := config_helper.LoadDefaultAlertConfig()
+	alertConfig, err := config.LoadDefaultAlertConfig()
 
 	if err != nil {
 		panic(err)
 	}
 
-	client := mqtt.NewClient(&config.Broker)
+	client := mqtt.NewClient(&alertConfig.Broker)
 	if err := client.Connect(); err != nil {
 		panic(err)
 	}
 
 	defer client.Disconnect()
 
-	handleAlertListening(client, config.SensorsAlert)
+	handleAlertListening(client, alertConfig.SensorsAlert)
 
 	select {}
 }
 
-func handleAlertListening(client *mqtt.Client, alerts map[string]config_helper.SensorAlert) {
-
+func handleAlertListening(client *mqtt.Client, alerts map[string]config.SensorAlert) {
 	for sensorType, alert := range alerts {
 		err := client.Subscribe(alert.IncomingTopic,
 			1,
@@ -47,7 +46,7 @@ func handleAlertListening(client *mqtt.Client, alerts map[string]config_helper.S
 
 func checkValidRangeOnReception(
 	helperClient *mqtt.Client,
-	sensorAlert config_helper.SensorAlert,
+	sensorAlert config.SensorAlert,
 	alertMessage string,
 ) pahoMqtt.MessageHandler {
 	return func(mqttClient pahoMqtt.Client, message pahoMqtt.Message) {

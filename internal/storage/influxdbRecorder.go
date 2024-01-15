@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"sync"
 
-	"imt-atlantique.project.group.fr/meteo-airport/internal/config_helper"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/config"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
@@ -19,7 +19,7 @@ type InfluxDBRecorder struct {
 	org    string
 }
 
-func NewInfluxDBRecorder(settings config_helper.InfluxDBSettings) (*InfluxDBRecorder, error) {
+func NewInfluxDBRecorder(settings config.InfluxDBSettings) (*InfluxDBRecorder, error) {
 	client := influxdb2.NewClient(settings.URL, settings.Token)
 
 	return &InfluxDBRecorder{
