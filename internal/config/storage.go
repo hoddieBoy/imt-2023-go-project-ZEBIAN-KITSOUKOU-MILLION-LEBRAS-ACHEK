@@ -7,13 +7,11 @@ import (
 )
 
 type Storage struct {
-	Settings map[string]Setting
-	MQTT     mqtt.Config
-}
-
-type Setting struct {
-	InfluxDB InfluxDBSettings `yaml:"influxdb"`
-	CSV      CSVSettings      `yaml:"csv"`
+	Settings map[string]struct {
+		InfluxDB InfluxDBSettings `yaml:"influxdb"`
+		CSV      CSVSettings      `yaml:"csv"`
+	}
+	MQTT mqtt.Config
 }
 
 type InfluxDBSettings struct {
@@ -29,31 +27,22 @@ type CSVSettings struct {
 	TimeFormat    string `yaml:"time_format"`
 }
 
-func (c *Setting) Validate() error {
-	if c.InfluxDB == (InfluxDBSettings{}) && c.CSV == (CSVSettings{}) {
-		return fmt.Errorf("influxdb and csv settings are empty")
-	}
-
-	if c.InfluxDB != (InfluxDBSettings{}) {
-		if err := c.InfluxDB.Validate(); err != nil {
-			return err
-		}
-	}
-
-	if c.CSV != (CSVSettings{}) {
-		if err := c.CSV.Validate(); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 func (c *Storage) Validate() error {
-	for _, storages := range c.Settings {
-		// For each measurement, check if the storage is valid
-		if err := storages.Validate(); err != nil {
-			return err
+	for _, settings := range c.Settings {
+		if settings.InfluxDB == (InfluxDBSettings{}) && settings.CSV == (CSVSettings{}) {
+			return fmt.Errorf("influxdb and csv settings are empty")
+		}
+
+		if settings.InfluxDB != (InfluxDBSettings{}) {
+			if err := settings.InfluxDB.Validate(); err != nil {
+				return err
+			}
+		}
+
+		if settings.CSV != (CSVSettings{}) {
+			if err := settings.CSV.Validate(); err != nil {
+				return err
+			}
 		}
 	}
 

@@ -7,7 +7,7 @@ import (
 )
 
 type SensorConfig struct {
-	Sensor struct {
+	Setting struct {
 		AirportID  string `yaml:"airport_id"`
 		SensorID   int64  `yaml:"sensor_id"`
 		Topic      string `yaml:"topic"`
@@ -25,23 +25,23 @@ func (c *SensorConfig) Validate() error {
 		return err
 	}
 
-	if c.Sensor.AirportID == "" {
+	if c.Setting.AirportID == "" {
 		return fmt.Errorf("airport id is empty")
 	}
 
-	if c.Sensor.SensorID == 0 {
+	if c.Setting.SensorID == 0 {
 		return fmt.Errorf("sensor id is empty")
 	}
 
-	if c.Sensor.Topic == "" {
+	if c.Setting.Topic == "" {
 		return fmt.Errorf("topic is empty")
 	}
 
-	if c.Sensor.Unit == "" {
+	if c.Setting.Unit == "" {
 		return fmt.Errorf("unit is empty")
 	}
 
-	if c.Sensor.TimeFormat == "" {
+	if c.Setting.TimeFormat == "" {
 		return fmt.Errorf("time format is empty")
 	}
 
