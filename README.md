@@ -22,6 +22,7 @@ The project is structured as follows:
 
 - Go 1.21.4
 - Make 3.81 or compatible
+- Docker 24.0.6 or compatible
 
 ### Installation steps
 
@@ -53,6 +54,40 @@ The project is structured as follows:
 ## Usage
 
 ### Run the project
+
+### Run the linter
+
+Before your branch is merged, [golangci-lint](https://golangci-lint.run/) will be run on your code on the CI server.
+
+First, you need to install it locally:
+
+```bash
+docker pull golangci/golangci-lint
+```
+
+After You can run it locally with docker by running the following command:
+
+```bash
+docker run -t --rm -v $(pwd):/app -w /app golangci/golangci-lint golangci-lint run -v
+```
+
+or with make:
+
+```bash
+make lint
+```
+
+If you want to fix the issues automatically, you can run the following command:
+
+```bash
+docker run -t --rm -v $(pwd):/app -w /app golangci/golangci-lint golangci-lint run -v --fix
+```
+
+or with make:
+
+```bash
+make lint-fix
+```
 
 ## Authors
 

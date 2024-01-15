@@ -1,4 +1,5 @@
-.PHONY: help clean build install
+.PHONY: help clean build install lint lint-fix
+BASE_LINT_CMD=docker run -t --rm -v $$(pwd):/app -w /app golangci/golangci-lint golangci-lint run -v
 
 ##@ Help
 help: ## Display this current help
@@ -13,3 +14,9 @@ build: ## build all go module of the project
 
 install: ## install all go module of the project
 	@go install -v ./...
+
+lint: ## run golangci-lint on the project
+	@$(BASE_LINT_CMD)
+
+lint-fix: ## run golangci-lint on the project and fix issues automatically
+	@$(BASE_LINT_CMD) --fix
