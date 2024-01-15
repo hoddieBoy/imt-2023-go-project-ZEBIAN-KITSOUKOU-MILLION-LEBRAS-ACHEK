@@ -4,6 +4,37 @@ import RPi.GPIO as GPIO
 import time
 import Freenove_DHT as DHT
 import paho.mqtt.client as mqtt
+from datetime import datetime
+from enum import Enum
+import json
+
+class MeasurementType(Enum):
+    TEMPERATURE = 1
+    HUMIDITY = 2
+
+class Measurement:
+    def __init__(self, sensor_id: int, airport_id: str, type: MeasurementType, value: float, unit: str, timestamp: datetime):
+        self.sensor_id = sensor_id
+        self.airport_id = airport_id
+        self.type = type
+        self.value = value
+        self.unit = unit
+        self.timestamp = timestamp
+
+class MeasurementEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Measurement):
+            return {
+                'sensor_id': obj.sensor_id,
+                'airport_id': obj.airport_id,
+                'type': obj.type.name,  # Convert Enum to string
+                'value': obj.value,
+                'unit': obj.unit,
+                'timestamp': obj.timestamp.isoformat()  # Convert datetime to ISO 8601 string
+            }
+        return super().default(obj)
+    
+
 
 # Define MQTT broker and topic
 broker = "localhost"
@@ -51,7 +82,12 @@ def loop():
                 break
             time.sleep(0.1)
         print("Humidity : %.2f, \t Temperature : %.2f \n"%(dht.humidity,dht.temperature))
-        client.publish(topic, f"Temperature: {dht.temperature}, Humidity: {dht.humidity}")
+        
+        measurement = Measurement(1, 'airport1', MeasurementType.TEMPERATURE, dht.temperature, 'C', datetime.now())
+        json_str = json.dumps(measurement, cls=MeasurementEncoder)
+        
+        
+        client.publish(topic, f"{json_str}")
         time.sleep(5)       
         
 if __name__ == '__main__':

@@ -1,5 +1,8 @@
 #include "DHT.h"
 #include <WiFi.h>
+#include <ArduinoJson.h>
+#include <time.h>
+#include <ctime>
 extern "C" {
   #include "freertos/FreeRTOS.h"
   #include "freertos/timers.h"
@@ -26,6 +29,21 @@ extern "C" {
 #define ID "Enter your ID"
 #define PASS "Enter your password"
 
+enum class MeasurementType {
+  TEMPERATURE,
+  HUMIDITY
+  // Add other types as needed
+};
+
+struct Measurement {
+  int64_t sensor_id;
+  String airport_id;
+  MeasurementType type;
+  double value;
+  String unit;
+  time_t timestamp;  // This is the C++ equivalent of Go's time.Time
+};
+
 // Initialize DHT sensor
 DHT dht(DHTPIN, DHTTYPE);
 
@@ -39,6 +57,8 @@ TimerHandle_t wifiReconnectTimer;
 
 unsigned long previousMillis = 0;   // Stores last time temperature was published
 const long interval = 10000;        // Interval at which to publish sensor readings
+
+time_t current_time = time(nullptr);
 
 void connectToWifi() {
   Serial.println("Connecting to Wi-Fi...");

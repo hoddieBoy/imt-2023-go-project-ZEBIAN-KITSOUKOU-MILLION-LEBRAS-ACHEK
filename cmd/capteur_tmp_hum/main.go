@@ -24,11 +24,14 @@ func connect(brokerURI string, clientId string) mqtt.Client {
 	opts := createClientOptions(brokerURI, clientId)
 	client := mqtt.NewClient(opts)
 	token := client.Connect()
+	
 	for !token.WaitTimeout(3 * time.Second) {
 	}
+
 	if err := token.Error(); err != nil {
 		panic(err)
 	}
+
 	return client
 }
 
@@ -46,7 +49,6 @@ func main() {
 		Unit:      "°C",
 		Timestamp: time.Now(),
 	}
-
 	measurementH := sensor.Measurement{
 		SensorID:  invoiceIndex,
 		AirportID: "CDG",
@@ -64,21 +66,22 @@ func main() {
 	// username := "emqx"
 	// password := ""
 
-	// Send fake temperature and humidity data every 3 seconds for temperature and 5 seconds for humidity
+	// Send fake temperature and humidity data every 3 seconds for 
+	// temperature and 5 seconds for humidity
 	for {
 		// Generate random temperature and humidity values
 		temperature := 20 + rand.Float64() * (30 - 20)
 		humidity := 40 + rand.Float64() * (60 - 40)
 
-	invoiceIndex++
+		invoiceIndex++
 
-	measurementT.SensorID = invoiceIndex
-	measurementT.Timestamp = time.Now()
-	measurementT.Value = temperature
+		measurementT.SensorID = invoiceIndex
+		measurementT.Timestamp = time.Now()
+		measurementT.Value = temperature
 
-	measurementH.SensorID = invoiceIndex
-	measurementH.Timestamp = time.Now()
-	measurementH.Value = humidity
+		measurementH.SensorID = invoiceIndex
+		measurementH.Timestamp = time.Now()
+		measurementH.Value = humidity
 
 		// Publish temperature data to MQTT topic
 		// token := client.Publish("capteur/T", 2, false, fmt.Sprintf("%.2f", temperature))
