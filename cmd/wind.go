@@ -1,4 +1,4 @@
-package sensor
+package main
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 
 func windDataGeneration(actualWind float64, min float64, max float64) float64 {
@@ -22,8 +23,8 @@ func windDataGeneration(actualWind float64, min float64, max float64) float64 {
 	return actualWind
 }
 
-func publishData(actualWind float64, sensor Sensor) {
-	sensor.GenerateData(2, "CGD", MeasurementType("windSpeed"),
+func publishData(actualWind float64, sensor sensor.Sensor) {
+	sensor.GenerateData(2, "CGD", "windSpeed",
 		actualWind, "Km/h", time.Now())
 	err := sensor.PublishData()
 
@@ -33,7 +34,7 @@ func publishData(actualWind float64, sensor Sensor) {
 }
 
 func main() {
-	sensor := Sensor{}
+	sensor := sensor.Sensor{}
 	err := sensor.InitializeSensor()
 
 	if err != nil {

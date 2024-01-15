@@ -2,11 +2,6 @@ package mqtt
 
 import (
 	"fmt"
-<<<<<<< HEAD:internal/mqtt_helper/config.go
-	"gopkg.in/yaml.v3"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/logutil"
-=======
->>>>>>> main:internal/mqtt/config.go
 	"os"
 
 	"gopkg.in/yaml.v3"
