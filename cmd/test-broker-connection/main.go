@@ -16,7 +16,7 @@ func main() {
 		defer client.Disconnect()
 
 		// Print the message when it is received
-		if err := client.Subscribe("test", 1, func(client mqtt.Client, message pahoMqtt.Message) {
+		if err := client.Subscribe("test", 1, func(client pahoMqtt.Client, message pahoMqtt.Message) {
 			println(string(message.Payload()))
 		}); err != nil {
 			panic(err)
