@@ -8,24 +8,24 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-	"github.com/influxdata/influxdb-client-go/v2"
+	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 
-var newUrl = "http://localhost:8081/api/v1/measurements"
+var newURL = "http://localhost:8081/api/v1/measurements"
 var content = "Content-Type"
 var application = "application/json"
 
 func RedirectHomeHandler(w http.ResponseWriter, r *http.Request) {
 	log.Info("This is the redirect home handler")
-	http.Redirect(w, r, newUrl, http.StatusSeeOther)
+	http.Redirect(w, r, newURL, http.StatusSeeOther)
 }
 
-func HomeHandler(writer http.ResponseWriter, request *http.Request) {
+func HomeHandler(writer http.ResponseWriter, _ *http.Request) {
 	log.Info("This is the home handler")
-	jsonData, err := json.Marshal(map[string]interface{}{
 
+	jsonData, err := json.Marshal(map[string]interface{}{
 		"message": "Hello welcome to our API",
 	},
 	)
@@ -37,12 +37,14 @@ func HomeHandler(writer http.ResponseWriter, request *http.Request) {
 
 	writer.Header().Set(content, application)
 	_, err = writer.Write(jsonData)
+
 	if err != nil {
 		return
 	}
 }
 
 func MeasurementIntervalHandler(w http.ResponseWriter, r *http.Request) {
+
 	log.Info("This is the measurement interval handler")
 	id := mux.Vars(r)["type"]
 	start := r.URL.Query().Get("start")
@@ -66,6 +68,7 @@ func MeasurementIntervalHandler(w http.ResponseWriter, r *http.Request) {
 	// Iterate over query response
 
 	data := make([]map[string]interface{}, 0)
+
 	for result.Next() {
 		// Notice when group key has changed
 		if result.TableChanged() {
@@ -89,17 +92,20 @@ func MeasurementIntervalHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	w.Header().Set(content, application)
 	_, err = w.Write(jsonData)
+
 	if err != nil {
 		panic(err)
 	}
 }
 
-func AverageMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request) {
+func AvgMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request) {
 	log.Info("This is the average measurement in a date handler")
 
 	var types []string
+
 	t := r.URL.Query().Get("types")
 
 	if t == "" {
@@ -117,7 +123,7 @@ func AverageMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request
 	client := influxdb2.NewClient("http://localhost:8086",
 		"upvBeRD7IGz2JkRYkF16F4PK7g-uciplnKnwMnLnFqk_5AAoT-dcUz_fWoeL0f6iy3enhBS-N0tLhwfZ0ILZiA==")
 
-	var typeF []string
+	typeF := make([]string, 0)
 	for _, t := range types {
 		typeF = append(typeF, fmt.Sprintf(`r._measurement == "%s"`, t))
 	}
@@ -193,7 +199,7 @@ func main() {
 	router.HandleFunc("/api/v1", RedirectHomeHandler)
 	router.HandleFunc("/api/v1/measurements", HomeHandler)
 	router.HandleFunc("/api/v1/measurements/interval/{type}/", MeasurementIntervalHandler)
-	router.HandleFunc("/api/v1/measurements/mean/", AverageMeasurementInADayHandler)
+	router.HandleFunc("/api/v1/measurements/mean/", AvgMeasurementInADayHandler)
 
 	err := http.ListenAndServe(":8081", router)
 	if err != nil {
