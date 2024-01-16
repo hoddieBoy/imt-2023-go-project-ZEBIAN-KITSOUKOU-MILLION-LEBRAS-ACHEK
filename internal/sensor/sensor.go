@@ -13,7 +13,8 @@ type Sensor struct {
 	data   Measurement
 }
 
-func (s *Sensor) InitializeSensor() error {
+func (s *Sensor) InitializeSensor(sensorID int64, airportID string, sensorType MeasurementType,
+	value float64, unit string, timestamp time.Time) error {
 	config, err := mqtt.RetrieveMQTTPropertiesFromYaml("./config/hiveClientConfig.yaml")
 
 	if err != nil {
@@ -31,11 +32,6 @@ func (s *Sensor) InitializeSensor() error {
 
 	s.client = client
 
-	return nil
-}
-
-func (s *Sensor) GenerateData(sensorID int64, airportID string, sensorType MeasurementType,
-	value float64, unit string, timestamp time.Time) {
 	s.data = Measurement{
 		SensorID:  sensorID,
 		AirportID: airportID,
@@ -44,6 +40,8 @@ func (s *Sensor) GenerateData(sensorID int64, airportID string, sensorType Measu
 		Unit:      unit,
 		Timestamp: timestamp,
 	}
+
+	return nil
 }
 
 func (s *Sensor) PublishData() error {
