@@ -3,16 +3,14 @@ package main
 import (
 	"fmt"
 	"math/rand"
-	"os"
 	"time"
 
-	"imt-atlantique.project.group.fr/meteo-airport/internal/config"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 
 func windDataGeneration(actualWind float64, min float64, max float64) float64 {
-	actualWind += (rand.Float64() - rand.Float64()) * 5
+	actualWind += (rand.Float64() - rand.Float64()) * 10
 
 	if actualWind < min {
 		actualWind = min
@@ -25,38 +23,28 @@ func windDataGeneration(actualWind float64, min float64, max float64) float64 {
 	return actualWind
 }
 
-func publishData(actualWind float64, sensor *sensor.Sensor) {
-	sensor.GenerateData(actualWind)
-
-	err := sensor.PublishData()
-
-	if err != nil {
-		log.Error(fmt.Sprintf("Failed to publish data to client: %v", err))
-	}
-}
-
 func main() {
-	args := os.Args[1:]
+	actualWind := 40.0
+	minimalValue := 10.0
+	maximalValue := 120.0
 
-	if len(args) == 0 {
-		log.Warn("No config file specified, using default path: config/config.yaml")
-	} else {
-		config.SetDefaultConfigFileName(args[0])
-	}
-
-	windSensor, err := sensor.InitializeSensor(sensor.WindSpeed)
+	sensor := sensor.Sensor{}
+	err := sensor.InitializeSensor(2, "CGD", "windSpeed",
+		actualWind, "Km/h", time.Now())
 
 	if err != nil {
 		panic(err)
 	}
 
-	actualWind := 40.0
-	minimalValue := 10.0
-	maximalValue := 120.0
-
 	for {
 		actualWind = windDataGeneration(actualWind, minimalValue, maximalValue)
-		publishData(actualWind, windSensor)
+		sensor.ChangeValueMeasurement(actualWind)
+		err := sensor.PublishData()
+
+		if err != nil {
+			log.Error(fmt.Sprintf("Failed to publish data to client: %v", err))
+		}
+
 		time.Sleep(5 * time.Second)
 	}
 }

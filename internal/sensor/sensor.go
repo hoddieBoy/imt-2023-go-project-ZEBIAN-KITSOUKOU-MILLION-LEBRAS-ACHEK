@@ -4,49 +4,49 @@ import (
 	"fmt"
 	"time"
 
-	"imt-atlantique.project.group.fr/meteo-airport/internal/config"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
 )
 
 type Sensor struct {
 	client *mqtt.Client
-	config *config.SensorConfig
-	last   *Measurement
+	data   Measurement
 }
 
-func InitializeSensor(sensorType MeasurementType) (*Sensor, error) {
-	cfg, err := config.LoadDefaultSensorConfig()
+func (s *Sensor) InitializeSensor(sensorID int64, airportID string, sensorType MeasurementType,
+	value float64, unit string, timestamp time.Time) error {
+	config, err := mqtt.RetrieveMQTTPropertiesFromYaml("./config/hiveClientConfig.yaml")
 
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
-	client := mqtt.NewClient(&cfg.Broker.Client)
+	client := mqtt.NewClient(config, "clientId")
 
-	if err := client.Connect(); err != nil {
-		return nil, err
+	err = client.Connect()
+
+	if err != nil {
+		log.Error(fmt.Sprintf("Cannot connect to client: %v", err))
+		return err
 	}
 
-	return &Sensor{
-		client: client,
-		config: cfg,
-		last: &Measurement{
-			SensorID:  cfg.Setting.SensorID,
-			AirportID: cfg.Setting.AirportID,
-			Type:      sensorType,
-			Unit:      cfg.Setting.Unit,
-		},
-	}, nil
-}
+	s.client = client
 
-func (s *Sensor) GenerateData(value float64) {
-	s.last.Value = value
-	s.last.Timestamp = time.Now()
+	s.data = Measurement{
+		SensorID:  sensorID,
+		AirportID: airportID,
+		Type:      sensorType,
+		Value:     value,
+		Unit:      unit,
+		Timestamp: timestamp,
+	}
+
+	return nil
 }
 
 func (s *Sensor) PublishData() error {
-	err := s.last.PublishOnMQTT(s.config.Broker.Qos, false, s.client)
+	var qos byte = 2
+	err := s.data.PublishOnMQTT(qos, false, s.client)
 
 	if err != nil {
 		log.Error(fmt.Sprintf("Failed to publish data to client: %v", err))
@@ -54,4 +54,8 @@ func (s *Sensor) PublishData() error {
 	}
 
 	return nil
+}
+
+func (s *Sensor) ChangeValueMeasurement(value float64) {
+	s.data.Value = value
 }
