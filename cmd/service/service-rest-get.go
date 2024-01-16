@@ -19,13 +19,10 @@ var content = "Content-Type"
 var application = "application/json"
 
 func RedirectHomeHandler(w http.ResponseWriter, r *http.Request) {
-	log.Info("This is the redirect home handler")
 	http.Redirect(w, r, newURL, http.StatusSeeOther)
 }
 
 func HomeHandler(writer http.ResponseWriter, _ *http.Request) {
-	log.Info("This is the home handler")
-
 	jsonData, err := json.Marshal(map[string]interface{}{
 		"message": "Hello welcome to our API",
 	},
@@ -45,8 +42,6 @@ func HomeHandler(writer http.ResponseWriter, _ *http.Request) {
 }
 
 func MeasurementIntervalHandler(w http.ResponseWriter, r *http.Request) {
-	log.Info("This is the measurement interval handler")
-
 	id := mux.Vars(r)["type"]
 	start := r.URL.Query().Get("start")
 	end := r.URL.Query().Get("end")
@@ -57,7 +52,6 @@ func MeasurementIntervalHandler(w http.ResponseWriter, r *http.Request) {
 	fluxQuery := fmt.Sprintf(`from(bucket: "metrics")
 	|> range(start: %s , stop: %s)
 	|> filter(fn: (r) => r._measurement == "%s" )`, start, end, id)
-	log.Info("fluxQuery: %s", fluxQuery)
 
 	// get QueryTableResult
 	result, err := client.QueryAPI("meteo-airport").Query(context.Background(), fluxQuery)
@@ -71,12 +65,7 @@ func MeasurementIntervalHandler(w http.ResponseWriter, r *http.Request) {
 	data := make([]map[string]interface{}, 0)
 
 	for result.Next() {
-		// Notice when group key has changed
-		if result.TableChanged() {
-			log.Info("table: %s", result.TableMetadata().String())
-		}
 		// Access data
-		log.Info("value: %v", result.Record().Value())
 		data = append(data, map[string]interface{}{"value": result.Record().Value(),
 			"time": result.Record().Time().String(),
 			"unit": result.Record().Field()})
@@ -103,8 +92,6 @@ func MeasurementIntervalHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func AvgMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request) {
-	log.Info("This is the average measurement in a date handler")
-
 	var types []string
 
 	t := r.URL.Query().Get("types")
@@ -137,7 +124,6 @@ func AvgMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request) {
 	|> group(columns: ["_measurement"])
 	|> yield(name: "mean")
 	`, date, date+"T23:59:59Z", strings.Join(typeF, " or "))
-	log.Info("fluxQuery: %s", fluxQuery)
 
 	// get QueryTableResult
 	result, err := client.QueryAPI("meteo-airport").Query(context.Background(), fluxQuery)
@@ -149,14 +135,7 @@ func AvgMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request) {
 	data := make([]map[string]interface{}, 0)
 
 	for result.Next() {
-		// Notice when group key has changed
-		if result.TableChanged() {
-			log.Info("table: %s", result.TableMetadata().String())
-		}
-
 		// Access data
-		log.Info("value: %v", result.Record())
-
 		var measurementType string
 
 		switch measurementType {
@@ -213,6 +192,7 @@ func main() {
 	}
 
 	err := server.ListenAndServe()
+
 	if err != nil {
 		panic(err)
 	}
