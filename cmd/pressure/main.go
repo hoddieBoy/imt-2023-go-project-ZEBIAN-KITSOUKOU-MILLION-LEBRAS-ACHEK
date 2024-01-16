@@ -23,14 +23,6 @@ func windDataGeneration(actualPressure float64, min float64, max float64) float6
 	return actualPressure
 }
 
-func publishData(sensor sensor.Sensor) {
-	err := sensor.PublishData()
-
-	if err != nil {
-		log.Error(fmt.Sprintf("Failed to publish data to client: %v", err))
-	}
-}
-
 func main() {
 	actualPressure := 1013.25
 	minimalValue := 875.0
@@ -47,7 +39,12 @@ func main() {
 	for {
 		actualPressure = windDataGeneration(actualPressure, minimalValue, maximalValue)
 		sensor.ChangeValueMeasurement(actualPressure)
-		publishData(sensor)
+		err := sensor.PublishData()
+
+		if err != nil {
+			log.Error(fmt.Sprintf("Failed to publish data to client: %v", err))
+		}
+
 		time.Sleep(5 * time.Second)
 	}
 }
