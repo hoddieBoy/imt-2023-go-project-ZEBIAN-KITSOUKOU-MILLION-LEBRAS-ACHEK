@@ -5,8 +5,6 @@ import (
 	"math/rand"
 	"time"
 	
-	mqtt_helper "imt-atlantique.project.group.fr/meteo-airport/internal/mqtt_helper"
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 	sensor "imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 
@@ -47,7 +45,7 @@ func main() {
 
 	if err != nil {panic(err)}
 
-	// var invoiceIndex int64 = 0
+	var invoiceIndex int64 = 0
 	// measurementT := sensor.Measurement{
 	// 	SensorID:  1,
 	// 	AirportID: "CDG",
@@ -68,8 +66,8 @@ func main() {
 
 	clientID := "jam_client"
 
-	client := mqtt_helper.NewClient(config, clientID)
-	client.Connect()
+	// client := mqtt_helper.NewClient(config, clientID)
+	// client.Connect()
 	// username := "emqx"
 	// password := ""
 
@@ -78,7 +76,7 @@ func main() {
 	for {
 		// Generate random temperature and humidity values
 		temperature := 20 + rand.Float64() * (30 - 20)
-		humidity := 40 + rand.Float64() * (60 - 40)
+		//humidity := 40 + rand.Float64() * (60 - 40)
 
 		invoiceIndex++
 
