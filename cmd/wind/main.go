@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"math/rand"
 	"time"
 
-	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 
@@ -21,14 +21,6 @@ func windDataGeneration(actualWind float64, min float64, max float64) float64 {
 	}
 
 	return actualWind
-}
-
-func publishData(sensor sensor.Sensor) {
-	err := sensor.PublishData()
-
-	if err != nil {
-		log.Error(fmt.Sprintf("Failed to publish data to client: %v", err))
-	}
 }
 
 func main() {
@@ -47,7 +39,12 @@ func main() {
 	for {
 		actualWind = windDataGeneration(actualWind, minimalValue, maximalValue)
 		sensor.ChangeValueMeasurement(actualWind)
-		publishData(sensor)
+		err := sensor.PublishData()
+
+		if err != nil {
+			log.Error(fmt.Sprintf("Failed to publish data to client: %v", err))
+		}
+
 		time.Sleep(5 * time.Second)
 	}
 }
