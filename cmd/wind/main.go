@@ -24,9 +24,6 @@ func windDataGeneration(actualWind float64, min float64, max float64) float64 {
 }
 
 func publishData(actualWind float64, sensor sensor.Sensor) {
-	sensor.GenerateData(2, "CGD", "windSpeed",
-		actualWind, "Km/h", time.Now())
-
 	err := sensor.PublishData()
 
 	if err != nil {
@@ -35,16 +32,18 @@ func publishData(actualWind float64, sensor sensor.Sensor) {
 }
 
 func main() {
-	sensor := sensor.Sensor{}
-	err := sensor.InitializeSensor()
-
-	if err != nil {
-		panic(err)
-	}
 
 	actualWind := 40.0
 	minimalValue := 10.0
 	maximalValue := 120.0
+
+	sensor := sensor.Sensor{}
+	err := sensor.InitializeSensor(2, "CGD", "windSpeed",
+		actualWind, "Km/h", time.Now())
+
+	if err != nil {
+		panic(err)
+	}
 
 	for {
 		actualWind = windDataGeneration(actualWind, minimalValue, maximalValue)
