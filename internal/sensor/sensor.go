@@ -57,3 +57,7 @@ func (s *Sensor) PublishData() error {
 
 	return nil
 }
+
+func (s *Sensor) ChangeValueMeasurement(value float64) {
+	s.data.Value = value
+}
