@@ -4,58 +4,55 @@ import (
 	"fmt"
 	"time"
 
+	"imt-atlantique.project.group.fr/meteo-airport/internal/config"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
 )
 
 type Sensor struct {
-	client *mqtt.Client
-	data   Measurement
+	client       *mqtt.Client
+	last         Measurement
+	publishTopic string
+	qos          byte
 }
 
-func (s *Sensor) InitializeSensor(sensorID int64, airportID string, sensorType MeasurementType,
-	value float64, unit string, timestamp time.Time) error {
-	config, err := mqtt.RetrieveMQTTPropertiesFromYaml("./config/hiveClientConfig.yaml")
+func InitializeSensor(config *config.SensorConfig) (*Sensor, error) {
+	client := mqtt.NewClient(&config.Broker.Client)
 
-	if err != nil {
-		panic(err)
-	}
-
-	client := mqtt.NewClient(config, "clientId")
-
-	err = client.Connect()
+	err := client.Connect()
 
 	if err != nil {
 		log.Error(fmt.Sprintf("Cannot connect to client: %v", err))
-		return err
+		return nil, err
 	}
 
-	s.client = client
-
-	s.data = Measurement{
-		SensorID:  sensorID,
-		AirportID: airportID,
-		Type:      sensorType,
-		Value:     value,
-		Unit:      unit,
-		Timestamp: timestamp,
+	sensor := &Sensor{
+		client: client,
+		last: Measurement{
+			SensorID:  config.Setting.SensorID,
+			AirportID: config.Setting.AirportID,
+			Type:      MeasurementType(config.Setting.Type),
+			Unit:      config.Setting.Unit,
+		},
+		publishTopic: config.Setting.Topic,
+		qos:          config.Broker.Qos,
 	}
 
-	return nil
+	return sensor, nil
 }
 
 func (s *Sensor) PublishData() error {
-	var qos byte = 2
-	err := s.data.PublishOnMQTT(qos, false, s.client)
+	err := s.last.PublishOnMQTT(s.client, s.qos, false, s.publishTopic)
 
 	if err != nil {
-		log.Error(fmt.Sprintf("Failed to publish data to client: %v", err))
+		log.Error(fmt.Sprintf("Failed to publish last to client: %v", err))
 		return err
 	}
 
 	return nil
 }
 
-func (s *Sensor) ChangeValueMeasurement(value float64) {
-	s.data.Value = value
+func (s *Sensor) UpdateLastMeasurement(value float64) {
+	s.last.Value = value
+	s.last.Timestamp = time.Now()
 }

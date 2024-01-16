@@ -9,7 +9,7 @@ import (
 	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
 )
 
-// Measurement represents the data from a sensor
+// Measurement represents the last from a sensor
 type Measurement struct {
 	SensorID  int64           `json:"sensor_id"`
 	AirportID string          `json:"airport_id"`
@@ -62,7 +62,7 @@ func MeasurementFieldNames(separator string) string {
 }
 
 // PublishOnMQTT publishes a measurement to the MQTT broker
-func (m *Measurement) PublishOnMQTT(qos byte, retained bool, baseTopic string, client *mqtt.Client) error {
+func (m *Measurement) PublishOnMQTT(client *mqtt.Client, qos byte, retained bool, baseTopic string) error {
 	// Topic: baseTopic/<year-month-day>/<type_of_measurement>
 	topic := fmt.Sprintf("%s/%s/%s/", baseTopic, m.Timestamp.Format("2006-01-02"), m.Type)
 	payload, err := m.ToJSON()

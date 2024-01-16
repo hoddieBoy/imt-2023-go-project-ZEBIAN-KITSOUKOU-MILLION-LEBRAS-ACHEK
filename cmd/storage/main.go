@@ -1,9 +1,7 @@
 package main
 
 import (
-	"math/rand"
 	"os"
-	"time"
 
 	"imt-atlantique.project.group.fr/meteo-airport/internal/config"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
@@ -50,29 +48,6 @@ func createManager(storageConfig *config.Storage) *storage.Manager {
 	}
 
 	return manager
-}
-
-func publishMeasurements(client *mqtt.Client) {
-	measurement := sensor.Measurement{
-		SensorID:  1,
-		AirportID: "NTE",
-		Type:      sensor.Temperature,
-		Value:     20.0,
-		Unit:      "°C",
-		Timestamp: time.Now(),
-	}
-
-	for {
-		measurement.Timestamp = time.Now()
-		measurement.Value = measurement.Value + rand.Float64() - 0.5
-
-		if err := measurement.PublishOnMQTT(0, false, client); err != nil {
-			panic(err)
-		}
-
-		time.Sleep(1 * time.Second)
-		log.Info("Published measurement: %v", measurement)
-	}
 }
 
 func main() {

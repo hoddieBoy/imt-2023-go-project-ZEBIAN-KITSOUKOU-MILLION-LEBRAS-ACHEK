@@ -11,6 +11,7 @@ type SensorConfig struct {
 		AirportID  string `yaml:"airport_id"`
 		SensorID   int64  `yaml:"sensor_id"`
 		Topic      string `yaml:"topic"`
+		Type       string `yaml:"type"`
 		Unit       string `yaml:"unit"`
 		TimeFormat string `yaml:"time_format"`
 	} `yaml:"sensor"`
@@ -47,6 +48,10 @@ func (c *SensorConfig) Validate() error {
 
 	if c.Setting.TimeFormat == "" {
 		return fmt.Errorf("time format is empty")
+	}
+
+	if c.Setting.Type == "" {
+		return fmt.Errorf("type is empty")
 	}
 
 	return nil
