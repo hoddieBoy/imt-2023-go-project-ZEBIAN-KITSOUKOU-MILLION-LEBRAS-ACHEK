@@ -3,6 +3,7 @@ root-topic:
         humidity: "sensor/humidity"
         temperature: "sensor/temperature"
         pressure: "sensor/pressure"
+        wind: "sensor/wind"
 
     alert:
         humidity:
@@ -19,3 +20,8 @@ root-topic:
             end_point: "alert/pressure"
             lower_bound: 0
             higher_bound: 2
+
+        wind:
+            end_point: "sensor/wind"
+            lower_bound: 10
+            higher_bound: 120
