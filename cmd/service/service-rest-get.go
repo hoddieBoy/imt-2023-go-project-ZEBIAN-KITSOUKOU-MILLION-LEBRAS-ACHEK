@@ -14,9 +14,9 @@ import (
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 
+var client = influxdb2.NewClient("http://localhost:8086",
+	"upvBeRD7IGz2JkRYkF16F4PK7g-uciplnKnwMnLnFqk_5AAoT-dcUz_fWoeL0f6iy3enhBS-N0tLhwfZ0ILZiA==")
 var newURL = "http://localhost:8081/api/v1/measurements"
-var content = "Content-Type"
-var application = "application/json"
 
 func RedirectHomeHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, newURL, http.StatusSeeOther)
@@ -28,17 +28,12 @@ func HomeHandler(writer http.ResponseWriter, _ *http.Request) {
 	},
 	)
 
-	if err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	handleErr(err)
 
-	writer.Header().Set(content, application)
+	setResponseHeaders(writer)
 	_, err = writer.Write(jsonData)
 
-	if err != nil {
-		return
-	}
+	handleErr(err)
 }
 
 func MeasurementIntervalHandler(w http.ResponseWriter, r *http.Request) {
@@ -46,26 +41,16 @@ func MeasurementIntervalHandler(w http.ResponseWriter, r *http.Request) {
 	start := r.URL.Query().Get("start")
 	end := r.URL.Query().Get("end")
 
-	client := influxdb2.NewClient("http://localhost:8086",
-		"upvBeRD7IGz2JkRYkF16F4PK7g-uciplnKnwMnLnFqk_5AAoT-dcUz_fWoeL0f6iy3enhBS-N0tLhwfZ0ILZiA==")
-
 	fluxQuery := fmt.Sprintf(`from(bucket: "metrics")
 	|> range(start: %s , stop: %s)
 	|> filter(fn: (r) => r._measurement == "%s" )`, start, end, id)
 
-	// get QueryTableResult
 	result, err := client.QueryAPI("meteo-airport").Query(context.Background(), fluxQuery)
-	if err != nil {
-		log.Info("Error: %s", err)
-		panic(err)
-	}
-
-	// Iterate over query response
+	handleErr(err)
 
 	data := make([]map[string]interface{}, 0)
 
 	for result.Next() {
-		// Access data
 		data = append(data, map[string]interface{}{"value": result.Record().Value(),
 			"time": result.Record().Time().String(),
 			"unit": result.Record().Field()})
@@ -77,18 +62,12 @@ func MeasurementIntervalHandler(w http.ResponseWriter, r *http.Request) {
 		"end":   end,
 		"data":  data,
 	})
+	handleErr(err)
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set(content, application)
+	setResponseHeaders(w)
 	_, err = w.Write(jsonData)
 
-	if err != nil {
-		panic(err)
-	}
+	handleErr(err)
 }
 
 func AvgMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request) {
@@ -108,9 +87,6 @@ func AvgMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request) {
 
 	date := r.URL.Query().Get("date")
 
-	client := influxdb2.NewClient("http://localhost:8086",
-		"upvBeRD7IGz2JkRYkF16F4PK7g-uciplnKnwMnLnFqk_5AAoT-dcUz_fWoeL0f6iy3enhBS-N0tLhwfZ0ILZiA==")
-
 	typeF := make([]string, 0)
 	for _, t := range types {
 		typeF = append(typeF, fmt.Sprintf(`r._measurement == "%s"`, t))
@@ -125,20 +101,15 @@ func AvgMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request) {
 	|> yield(name: "mean")
 	`, date, date+"T23:59:59Z", strings.Join(typeF, " or "))
 
-	// get QueryTableResult
 	result, err := client.QueryAPI("meteo-airport").Query(context.Background(), fluxQuery)
-	if err != nil {
-		panic(err)
-	}
+	handleErr(err)
 
-	// Iterate over query response
 	data := make([]map[string]interface{}, 0)
 
 	for result.Next() {
-		// Access data
 		var measurementType string
 
-		switch measurementType {
+		switch result.Record().Measurement() {
 		case string(sensor.Temperature):
 			measurementType = string(sensor.Temperature)
 		case string(sensor.Humidity):
@@ -161,17 +132,22 @@ func AvgMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request) {
 		"data": data,
 	})
 
-	if err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	handleErr(err)
 
-	writer.Header().Set(content, application)
+	setResponseHeaders(writer)
 	_, err = writer.Write(jsonData)
 
+	handleErr(err)
+}
+
+func handleErr(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func setResponseHeaders(writer http.ResponseWriter) {
+	writer.Header().Set("Content-Type", "application/json")
 }
 
 func main() {
