@@ -24,7 +24,6 @@ func windDataGeneration(actualPressure float64, min float64, max float64) float6
 }
 
 func publishData(sensor sensor.Sensor) {
-
 	err := sensor.PublishData()
 
 	if err != nil {
