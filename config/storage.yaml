@@ -1,5 +1,5 @@
 settings:
-  temperature:
+  windSpeed:
     influxdb:
       url: "http://localhost:8086"
       token: "9o53z0vBFzgb1w9f-icJgdg8gOltOTY9AwpXaUeimPxbiJ2md5ys32K1hTWf82ZV03oMFL2XM_PL3sXjhs1rRg=="
@@ -10,6 +10,7 @@ settings:
       separator: ';'
       time_format: "2006-01-02T15:04:05Z07:00"
     qos: 1
+    topic: "airport/CDG/wind"
 
 mqtt:
   protocol: "tcp"
@@ -17,4 +18,4 @@ mqtt:
   port: 1883
   username: "admin"
   password: "anotherSecretPassword"
-  client_id: "storage-manager-weather-sensors-2"
+  client_id: "storage-manager-weather-station-CDG-1"

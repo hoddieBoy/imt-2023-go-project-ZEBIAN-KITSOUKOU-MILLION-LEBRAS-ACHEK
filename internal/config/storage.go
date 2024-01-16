@@ -11,6 +11,7 @@ type Storage struct {
 		InfluxDB InfluxDBSettings `yaml:"influxdb"`
 		CSV      CSVSettings      `yaml:"csv"`
 		Qos      byte
+		Topic    string
 	} `yaml:"settings"`
 	MQTT mqtt.Config
 }
@@ -52,6 +53,10 @@ func (c *Storage) Validate() error {
 			if err := settings.CSV.Validate(); err != nil {
 				return err
 			}
+		}
+
+		if settings.Topic == "" {
+			return fmt.Errorf("topic is empty")
 		}
 	}
 

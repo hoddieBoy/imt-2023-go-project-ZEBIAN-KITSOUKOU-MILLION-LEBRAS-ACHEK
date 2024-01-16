@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
 
+	"imt-atlantique.project.group.fr/meteo-airport/internal/config"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
@@ -23,9 +25,8 @@ func windDataGeneration(actualWind float64, min float64, max float64) float64 {
 	return actualWind
 }
 
-func publishData(actualWind float64, sensor sensor.Sensor) {
-	sensor.GenerateData(2, "CGD", "windSpeed",
-		actualWind, "Km/h", time.Now())
+func publishData(actualWind float64, sensor *sensor.Sensor) {
+	sensor.GenerateData(actualWind)
 
 	err := sensor.PublishData()
 
@@ -35,8 +36,15 @@ func publishData(actualWind float64, sensor sensor.Sensor) {
 }
 
 func main() {
-	sensor := sensor.Sensor{}
-	err := sensor.InitializeSensor()
+	args := os.Args[1:]
+
+	if len(args) == 0 {
+		log.Warn("No config file specified, using default path: config/config.yaml")
+	} else {
+		config.SetDefaultConfigFileName(args[0])
+	}
+
+	windSensor, err := sensor.InitializeSensor(sensor.WindSpeed)
 
 	if err != nil {
 		panic(err)
@@ -48,7 +56,7 @@ func main() {
 
 	for {
 		actualWind = windDataGeneration(actualWind, minimalValue, maximalValue)
-		publishData(actualWind, sensor)
+		publishData(actualWind, windSensor)
 		time.Sleep(5 * time.Second)
 	}
 }
