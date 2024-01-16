@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/influxdata/influxdb-client-go/v2"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 
 var newUrl = "http://localhost:8081/api/v1/measurements"
@@ -142,27 +143,30 @@ func AverageMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request
 		if result.TableChanged() {
 			log.Info("table: %s", result.TableMetadata().String())
 		}
+
 		// Access data
 		log.Info("value: %v", result.Record())
 		var measurementType string
-		if result.Record().Measurement() == "temperature" {
-			measurementType = "temperature"
-		} else if result.Record().Measurement() == "humidity" {
-			measurementType = "humidity"
-		} else if result.Record().Measurement() == "pressure" {
-			measurementType = "pressure"
-		} else if result.Record().Measurement() == "windSpeed" {
-			measurementType = "windSpeed"
+		switch measurementType {
+		case string(sensor.Temperature):
+			measurementType = string(sensor.Temperature)
+		case string(sensor.Humidity):
+			measurementType = string(sensor.Humidity)
+		case string(sensor.Pressure):
+			measurementType = string(sensor.Pressure)
+		case string(sensor.WindSpeed):
+			measurementType = string(sensor.WindSpeed)
 		}
+
 		data = append(data, map[string]interface{}{
 			"type":  measurementType,
 			"value": result.Record().Value(),
-			"time":  result.Record().Time().String(),
 			"unit":  result.Record().Field(),
 		})
 	}
 
 	jsonData, err := json.Marshal(map[string]interface{}{
+		"day":  day,
 		"data": data,
 	})
 
