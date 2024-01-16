@@ -10,6 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
+	"github.com/influxdata/influxdb-client-go/v2/api"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
@@ -104,6 +105,31 @@ func AvgMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request) {
 	result, err := client.QueryAPI("meteo-airport").Query(context.Background(), fluxQuery)
 	handleErr(err)
 
+	data := processData(*result)
+	jsonData, err := json.Marshal(map[string]interface{}{
+		"date": date,
+		"data": data,
+	})
+
+	handleErr(err)
+
+	setResponseHeaders(writer)
+	_, err = writer.Write(jsonData)
+
+	handleErr(err)
+}
+
+func handleErr(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+func setResponseHeaders(writer http.ResponseWriter) {
+	writer.Header().Set("Content-Type", "application/json")
+}
+
+func processData(result api.QueryTableResult) []map[string]interface{} {
 	data := make([]map[string]interface{}, 0)
 
 	for result.Next() {
@@ -127,27 +153,7 @@ func AvgMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	jsonData, err := json.Marshal(map[string]interface{}{
-		"date": date,
-		"data": data,
-	})
-
-	handleErr(err)
-
-	setResponseHeaders(writer)
-	_, err = writer.Write(jsonData)
-
-	handleErr(err)
-}
-
-func handleErr(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-func setResponseHeaders(writer http.ResponseWriter) {
-	writer.Header().Set("Content-Type", "application/json")
+	return data
 }
 
 func main() {
