@@ -14,6 +14,8 @@ import (
 )
 
 var newUrl = "http://localhost:8081/api/v1/measurements"
+var content = "Content-Type"
+var application = "application/json"
 
 func RedirectHomeHandler(w http.ResponseWriter, r *http.Request) {
 	log.Info("This is the redirect home handler")
@@ -33,7 +35,7 @@ func HomeHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	writer.Header().Set("Content-Type", "application/json")
+	writer.Header().Set(content, application)
 	_, err = writer.Write(jsonData)
 	if err != nil {
 		return
@@ -87,7 +89,7 @@ func MeasurementIntervalHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(content, application)
 	_, err = w.Write(jsonData)
 	if err != nil {
 		panic(err)
@@ -95,7 +97,7 @@ func MeasurementIntervalHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func AverageMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request) {
-	log.Info("This is the average measurement in a day handler")
+	log.Info("This is the average measurement in a date handler")
 
 	var types []string
 	t := r.URL.Query().Get("types")
@@ -110,7 +112,7 @@ func AverageMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request
 		types = append(types, "temperature", "humidity", "pressure", "windSpeed")
 	}
 
-	day := r.URL.Query().Get("day")
+	date := r.URL.Query().Get("date")
 
 	client := influxdb2.NewClient("http://localhost:8086",
 		"upvBeRD7IGz2JkRYkF16F4PK7g-uciplnKnwMnLnFqk_5AAoT-dcUz_fWoeL0f6iy3enhBS-N0tLhwfZ0ILZiA==")
@@ -127,7 +129,7 @@ func AverageMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request
 	|> aggregateWindow(every: 24h, fn: mean, createEmpty: false)
 	|> group(columns: ["_measurement"])
 	|> yield(name: "mean")
-	`, day, day+"T23:59:59Z", strings.Join(typeF, " or "))
+	`, date, date+"T23:59:59Z", strings.Join(typeF, " or "))
 	log.Info("fluxQuery: %s", fluxQuery)
 
 	// get QueryTableResult
@@ -166,7 +168,7 @@ func AverageMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request
 	}
 
 	jsonData, err := json.Marshal(map[string]interface{}{
-		"day":  day,
+		"date": date,
 		"data": data,
 	})
 
@@ -174,7 +176,7 @@ func AverageMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	writer.Header().Set("Content-Type", "application/json")
+	writer.Header().Set(content, application)
 	_, err = writer.Write(jsonData)
 	if err != nil {
 		panic(err)
