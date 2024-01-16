@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"math/rand"
 	"time"
 
+	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 
