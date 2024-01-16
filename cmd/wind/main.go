@@ -46,6 +46,7 @@ func main() {
 
 	for {
 		actualWind = windDataGeneration(actualWind, minimalValue, maximalValue)
+		sensor.ChangeValueMeasurement(actualWind)
 		publishData(sensor)
 		time.Sleep(5 * time.Second)
 	}
