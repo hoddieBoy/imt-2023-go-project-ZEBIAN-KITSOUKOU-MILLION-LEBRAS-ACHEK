@@ -44,8 +44,8 @@ func HomeHandler(writer http.ResponseWriter, _ *http.Request) {
 }
 
 func MeasurementIntervalHandler(w http.ResponseWriter, r *http.Request) {
-
 	log.Info("This is the measurement interval handler")
+
 	id := mux.Vars(r)["type"]
 	start := r.URL.Query().Get("start")
 	end := r.URL.Query().Get("end")
@@ -154,7 +154,9 @@ func AvgMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request) {
 
 		// Access data
 		log.Info("value: %v", result.Record())
+
 		var measurementType string
+
 		switch measurementType {
 		case string(sensor.Temperature):
 			measurementType = string(sensor.Temperature)
@@ -182,12 +184,13 @@ func AvgMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request) {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	writer.Header().Set(content, application)
 	_, err = writer.Write(jsonData)
+
 	if err != nil {
 		panic(err)
 	}
-
 }
 
 func main() {
