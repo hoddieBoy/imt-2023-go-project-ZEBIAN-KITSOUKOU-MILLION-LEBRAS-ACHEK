@@ -8,10 +8,10 @@ sensor:
 
 broker:
   client:
-    protocol: "tcp"
-    host: "localhost"
-    port: 1883
-    username: "admin"
-    password: "anotherSecretPassword"
+    protocol: "tls"
+    host: "0d23650ad8334e8b96e162999382b62d.s2.eu.hivemq.cloud"
+    port: 8883
+    username: "arduino"
+    password: "not4nArduino"
     client_id: "temperature-sensor-CDG-1"
   qos: 1

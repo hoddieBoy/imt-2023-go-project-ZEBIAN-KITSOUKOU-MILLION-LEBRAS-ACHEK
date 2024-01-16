@@ -13,7 +13,10 @@ type Storage struct {
 		Qos      byte
 		Topic    string
 	} `yaml:"settings"`
-	MQTT mqtt.Config
+	Broker struct {
+		Config   mqtt.Config `yaml:"config"`
+		ClientID string      `yaml:"client_id"`
+	} `yaml:"broker"`
 }
 
 type InfluxDBSettings struct {
@@ -60,7 +63,7 @@ func (c *Storage) Validate() error {
 		}
 	}
 
-	if err := c.MQTT.Validate(); err != nil {
+	if err := c.Broker.Config.Validate(); err != nil {
 		return err
 	}
 

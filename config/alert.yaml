@@ -1,20 +1,17 @@
-mqtt:
-  protocol: "tcp"
-  host: "localhost"
-  port: 1883
-  username: "admin"
-  password: "anotherSecretPassword"
-  client_id: "storage-manager-weather-sensors"
+broker:
+  protocol: "tls"
+  host: "0d23650ad8334e8b96e162999382b62d.s2.eu.hivemq.cloud"
+  port: 8883
+  username: "arduino"
+  password: "not4nArduino"
+  client_id: "temperature-sensor-CDG-1"
 
 sensors_alert:
-  temperature:
-    incoming_topic: "/sensors/temperature"
-    outgoing_topic: "/alerts/temperature"
-    lower_bound: -10
-    higher_bound: 50
-
-  humidity:
-    incoming_topic: "/sensors/humidity"
-    outgoing_topic: "/alerts/humidity"
+  windSpeed:
+    incoming_topic: "airport/CDG/wind/+"
+    outgoing_topic: "alerts/airport/CDG/wind"
     lower_bound: 20
-    higher_bound: 80
+    higher_bound: 30
+    incoming_qos: 1
+    outgoing_qos: 1
+    client_id: "alert-wind-sensor-CDG-1"

@@ -11,7 +11,7 @@ import (
 )
 
 func createManager(storageConfig *config.Storage) *storage.Manager {
-	client := mqtt.NewClient(&storageConfig.MQTT)
+	client := mqtt.NewClient(&storageConfig.Broker.Config, storageConfig.Broker.ClientID)
 
 	if connexionErr := client.Connect(); connexionErr != nil {
 		log.Error("Error connecting to MQTT broker: %v", connexionErr)
@@ -23,16 +23,23 @@ func createManager(storageConfig *config.Storage) *storage.Manager {
 	for measurement, setting := range storageConfig.Settings {
 		if setting.InfluxDB != (config.InfluxDBSettings{}) {
 			log.Info("Registering InfluxDB recorder for measurement %s", measurement)
-			log.Info("InfluxDB settings: %v", setting.InfluxDB)
 			influxDBRecorder, _ := storage.NewInfluxDBRecorder(setting.InfluxDB)
-			manager.AddRecorder(sensor.MeasurementType(measurement), influxDBRecorder, setting.Qos)
+			err := manager.AddRecorder(sensor.MeasurementType(measurement), setting.Topic, setting.Qos, influxDBRecorder)
+			if err != nil {
+				log.Error("Error adding recorder: %v", err)
+				os.Exit(1)
+			}
 		}
 
 		if setting.CSV != (config.CSVSettings{}) {
 			log.Info("Registering CSV recorder for measurement %s", measurement)
 
 			csvRecorder, _ := storage.NewCSVRecorder(setting.CSV)
-			manager.AddRecorder(sensor.MeasurementType(measurement), csvRecorder, 0)
+			err := manager.AddRecorder(sensor.MeasurementType(measurement), setting.Topic, setting.Qos, csvRecorder)
+			if err != nil {
+				log.Error("Error adding recorder: %v", err)
+				os.Exit(1)
+			}
 
 			if _, err := os.Stat(setting.CSV.PathDirectory); os.IsNotExist(err) {
 				log.Info("Creating the directory for saving the CSV files...")

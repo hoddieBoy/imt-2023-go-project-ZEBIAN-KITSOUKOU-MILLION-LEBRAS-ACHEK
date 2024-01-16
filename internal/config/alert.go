@@ -12,12 +12,13 @@ type Alert struct {
 }
 
 type SensorAlert struct {
-	IncomingTopic string `yaml:"incoming_topic"`
-	OutgoingTopic string `yaml:"outgoing_topic"`
-	LowerBound    int    `yaml:"lower_bound"`
-	HigherBound   int    `yaml:"higher_bound"`
-	IncomingQos   byte   `yaml:"incoming_qos"`
-	OutgoingQos   byte   `yaml:"outgoing_qos"`
+	IncomingTopic string  `yaml:"incoming_topic"`
+	OutgoingTopic string  `yaml:"outgoing_topic"`
+	LowerBound    float64 `yaml:"lower_bound"`
+	HigherBound   float64 `yaml:"higher_bound"`
+	IncomingQos   byte    `yaml:"incoming_qos"`
+	OutgoingQos   byte    `yaml:"outgoing_qos"`
+	ClientID      string  `yaml:"client_id"`
 }
 
 func (c *Alert) Validate() error {
@@ -37,6 +38,10 @@ func (c *Alert) Validate() error {
 
 		if sensor.LowerBound >= sensor.HigherBound {
 			return fmt.Errorf("lower bound is greater or equal to higher bound")
+		}
+
+		if sensor.ClientID == "" {
+			return fmt.Errorf("client id is empty")
 		}
 	}
 

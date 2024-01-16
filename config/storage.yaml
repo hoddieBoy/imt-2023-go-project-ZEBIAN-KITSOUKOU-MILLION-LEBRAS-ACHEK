@@ -2,7 +2,7 @@ settings:
   windSpeed:
     influxdb:
       url: "http://localhost:8086"
-      token: "9o53z0vBFzgb1w9f-icJgdg8gOltOTY9AwpXaUeimPxbiJ2md5ys32K1hTWf82ZV03oMFL2XM_PL3sXjhs1rRg=="
+      token: "6WoQTiS6btK3ATljFFfjVwSLH2NBB8UJJIu4MxtUauS0DcQGbqQeQk93b7vAO-sf0VVdIs2mNMuckbtRhATC0Q=="
       bucket: "metrics"
       organization: "meteo-airport"
     csv:
@@ -10,12 +10,14 @@ settings:
       separator: ';'
       time_format: "2006-01-02T15:04:05Z07:00"
     qos: 1
-    topic: "airport/CDG/wind"
+    topic: "airport/CDG/wind/+"
 
-mqtt:
-  protocol: "tcp"
-  host: "localhost"
-  port: 1883
-  username: "admin"
-  password: "anotherSecretPassword"
-  client_id: "storage-manager-weather-station-CDG-1"
+broker:
+  config:
+    protocol: "tls"
+    host: "411d6c045163486b846c891f3910e83f.s2.eu.hivemq.cloud"
+    port: 8883
+    username: "arduino"
+    password: "not4nArduino"
+    client_id: "temperature-sensor-CDG-1"
+  client_id: "wind-sensor-CDG-1"

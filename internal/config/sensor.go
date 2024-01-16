@@ -16,8 +16,9 @@ type SensorConfig struct {
 		TimeFormat string `yaml:"time_format"`
 	} `yaml:"sensor"`
 	Broker struct {
-		Client mqtt.Config `yaml:"client"`
-		Qos    byte        `yaml:"qos"`
+		Client   mqtt.Config `yaml:"client"`
+		Qos      byte        `yaml:"qos"`
+		ClientID string      `yaml:"client_id"`
 	} `yaml:"broker"`
 }
 

@@ -10,7 +10,6 @@ type Config struct {
 	Host     string `yaml:"host"`
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
-	ClientID string `yaml:"client_id"`
 }
 
 func (c *Config) GetServerAddress() string {
@@ -28,10 +27,6 @@ func (c *Config) Validate() error {
 
 	if c.Protocol == "" {
 		return fmt.Errorf("protocol is empty")
-	}
-
-	if c.ClientID == "" {
-		return fmt.Errorf("clientID is empty")
 	}
 
 	return nil

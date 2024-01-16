@@ -63,8 +63,7 @@ func MeasurementFieldNames(separator string) string {
 
 // PublishOnMQTT publishes a measurement to the MQTT broker
 func (m *Measurement) PublishOnMQTT(client *mqtt.Client, qos byte, retained bool, baseTopic string) error {
-	// Topic: baseTopic/<year-month-day>/<type_of_measurement>
-	topic := fmt.Sprintf("%s/%s/%s/", baseTopic, m.Timestamp.Format("2006-01-02"), m.Type)
+	topic := baseTopic + "/" + m.Timestamp.Format("2006-01-02")
 	payload, err := m.ToJSON()
 
 	if err != nil {

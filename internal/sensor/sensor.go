@@ -17,7 +17,7 @@ type Sensor struct {
 }
 
 func InitializeSensor(config *config.SensorConfig) (*Sensor, error) {
-	client := mqtt.NewClient(&config.Broker.Client)
+	client := mqtt.NewClient(&config.Broker.Client, config.Broker.ClientID)
 
 	err := client.Connect()
 
