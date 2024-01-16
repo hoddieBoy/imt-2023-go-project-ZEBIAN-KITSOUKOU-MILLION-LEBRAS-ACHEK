@@ -1,3 +1,14 @@
+// File: main.go
+// Description: main.go is the entry point of the API.
+// It is responsible for handling the routes and launching the server
+
+// @title Meteo Airport API
+// @description This is the API for the Meteo Airport project.
+// @version 1
+// @host localhost:8082
+// @BasePath /api/v1/measurements
+// @schemes http
+
 package main
 
 import (
@@ -8,16 +19,19 @@ import (
 	"strings"
 	"time"
 
+	_ "imt-atlantique.project.group.fr/meteo-airport/cmd/service/docs"
+
 	"github.com/gorilla/mux"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 
 var client = influxdb2.NewClient("http://localhost:8086",
 	"upvBeRD7IGz2JkRYkF16F4PK7g-uciplnKnwMnLnFqk_5AAoT-dcUz_fWoeL0f6iy3enhBS-N0tLhwfZ0ILZiA==")
-var newURL = "http://localhost:8081/api/v1/measurements"
+var newURL = "http://localhost:8082/api/v1/measurements"
 
 func RedirectHomeHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, newURL, http.StatusSeeOther)
@@ -37,6 +51,17 @@ func HomeHandler(writer http.ResponseWriter, _ *http.Request) {
 	handleErr(err)
 }
 
+// MeasurementIntervalHandler gets measurements in a specified interval.
+// @Summary Get measurements in a specific time interval
+// @Description Get measurements for a specified type within a time range.
+// @ID measurement-interval
+// @Accept json
+// @Produce json
+// @Param type path string true "Measurement type"
+// @Param start query string true "Start date in the format -Hh"
+// @Param end query string true "End date in the format -Hh"
+// @Success 200 {object} map[string]interface{}
+// @Router /interval/{type}/ [get]
 func MeasurementIntervalHandler(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["type"]
 	start := r.URL.Query().Get("start")
@@ -71,6 +96,17 @@ func MeasurementIntervalHandler(w http.ResponseWriter, r *http.Request) {
 	handleErr(err)
 }
 
+// AvgMeasurementInADayHandler gets the average measurement for specified types on a given date.
+// @Summary Get average measurement in a day
+// @Description Get the average measurement for specified types on a given date
+// @ID avg-measurement-in-a-day
+// @Accept json
+// @Produce json
+// @Param date query string true "Date in the format YYYY-MM-DD"
+// @Param types query string false "Comma-separated list of measurement types
+// (e.g., temperature,humidity,pressure,windSpeed)"
+// @Success 200 {object} map[string]interface{}
+// @Router /mean/ [get]
 func AvgMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request) {
 	var types []string
 
@@ -159,16 +195,18 @@ func processData(result api.QueryTableResult) []map[string]interface{} {
 func main() {
 	router := mux.NewRouter()
 
-	log.Info("Connected to the server on port 8081 !")
+	log.Info("Connected to the server on port 8082 !")
 	router.HandleFunc("/", RedirectHomeHandler)
 	router.HandleFunc("/api", RedirectHomeHandler)
 	router.HandleFunc("/api/v1", RedirectHomeHandler)
-	router.HandleFunc("/api/v1/measurements", HomeHandler)
-	router.HandleFunc("/api/v1/measurements/interval/{type}/", MeasurementIntervalHandler)
-	router.HandleFunc("/api/v1/measurements/mean/", AvgMeasurementInADayHandler)
+	router.HandleFunc("/api/v1/measurements", HomeHandler).Methods("GET")
+	router.HandleFunc("/api/v1/measurements/interval/{type}/", MeasurementIntervalHandler).Methods("GET")
+	router.HandleFunc("/api/v1/measurements/mean/", AvgMeasurementInADayHandler).Methods("GET")
+
+	router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
 	server := &http.Server{
-		Addr:              ":8081",
+		Addr:              ":8082",
 		Handler:           router,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
