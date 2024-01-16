@@ -38,25 +38,32 @@ func connect(brokerURI string, clientId string) mqtt.Client {
 func main() {
 	config, err := mqtt_helper.RetrieveMQTTPropertiesFromYaml("./config/hiveClientConfig.yaml")
 
+	sensor.sensor.InitializeSensor()
+
+	sensor_id = 1
+	sensor.sensor.GenerateData(sensor_id, "CDG", sensor.Temperature, 20, "°C", time.Now())
+	sensor.sensor.GenerateData(sensor_id, "CDG", sensor.Humidity, 30, "%", time.Now())
+
+
 	if err != nil {panic(err)}
 
-	var invoiceIndex int64 = 0
-	measurementT := sensor.Measurement{
-		SensorID:  1,
-		AirportID: "CDG",
-		Type:      sensor.Temperature,
-		Value:     20,
-		Unit:      "°C",
-		Timestamp: time.Now(),
-	}
-	measurementH := sensor.Measurement{
-		SensorID:  invoiceIndex,
-		AirportID: "CDG",
-		Type:      sensor.Humidity,
-		Value:     30,
-		Unit:      "%",
-		Timestamp: time.Now(),
-	}
+	// var invoiceIndex int64 = 0
+	// measurementT := sensor.Measurement{
+	// 	SensorID:  1,
+	// 	AirportID: "CDG",
+	// 	Type:      sensor.Temperature,
+	// 	Value:     20,
+	// 	Unit:      "°C",
+	// 	Timestamp: time.Now(),
+	// }
+	// measurementH := sensor.Measurement{
+	// 	SensorID:  invoiceIndex,
+	// 	AirportID: "CDG",
+	// 	Type:      sensor.Humidity,
+	// 	Value:     30,
+	// 	Unit:      "%",
+	// 	Timestamp: time.Now(),
+	// }
 
 
 	clientID := "jam_client"
@@ -75,13 +82,15 @@ func main() {
 
 		invoiceIndex++
 
-		measurementT.SensorID = invoiceIndex
-		measurementT.Timestamp = time.Now()
-		measurementT.Value = temperature
+		// measurementT.SensorID = invoiceIndex
+		// measurementT.Timestamp = time.Now()
+		// measurementT.Value = temperature
 
-		measurementH.SensorID = invoiceIndex
-		measurementH.Timestamp = time.Now()
-		measurementH.Value = humidity
+		sensor.sensor.ChangeValueMeasurement(temperature)
+
+		// measurementH.SensorID = invoiceIndex
+		// measurementH.Timestamp = time.Now()
+		// measurementH.Value = humidity
 
 		// Publish temperature data to MQTT topic
 		// token := client.Publish("capteur/T", 2, false, fmt.Sprintf("%.2f", temperature))
