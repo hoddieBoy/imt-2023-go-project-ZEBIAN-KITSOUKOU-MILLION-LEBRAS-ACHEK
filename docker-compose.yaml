@@ -29,7 +29,6 @@ services:
             timeout: 10s
             retries: 5
 
-
     ## Mosquitto - For MQTT broker
     mosquitto:
         build:

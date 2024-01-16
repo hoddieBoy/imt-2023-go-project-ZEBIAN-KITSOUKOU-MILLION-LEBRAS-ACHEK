@@ -1,0 +1,53 @@
+linters-settings:
+    govet:
+        check-shadowing: true
+    gocyclo:
+        min-complexity: 10
+    dupl:
+        threshold: 100
+    goconst:
+        min-len: 2
+        min-occurrences: 2
+    misspell:
+        locale: US
+    gosec:
+        excludes:
+            - G404
+
+linters:
+    disable-all: true
+    enable:
+        - govet
+        - gocyclo
+        - revive
+        - unused
+        - gosimple
+        - unused
+        - ineffassign
+        - errcheck
+        - staticcheck
+        - unconvert
+        - goconst
+        - goimports
+        - misspell
+        - unparam
+        - nakedret
+        - prealloc
+        - exportloopref
+        - gocritic
+        - gosec
+        - dupl
+        - funlen
+        - whitespace
+        - wsl
+        - lll
+
+run:
+    concurrency: 4
+    timeout: 5m
+
+output:
+    print-issued-lines: true
+    print-linter-name: true
+    uniq-by-line: true
+    sort-results: true
