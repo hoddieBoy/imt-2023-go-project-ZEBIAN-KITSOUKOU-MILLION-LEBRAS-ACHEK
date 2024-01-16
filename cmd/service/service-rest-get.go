@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
@@ -146,6 +147,7 @@ func AvgMeasurementInADayHandler(writer http.ResponseWriter, r *http.Request) {
 
 	// Iterate over query response
 	data := make([]map[string]interface{}, 0)
+
 	for result.Next() {
 		// Notice when group key has changed
 		if result.TableChanged() {
@@ -204,7 +206,13 @@ func main() {
 	router.HandleFunc("/api/v1/measurements/interval/{type}/", MeasurementIntervalHandler)
 	router.HandleFunc("/api/v1/measurements/mean/", AvgMeasurementInADayHandler)
 
-	err := http.ListenAndServe(":8081", router)
+	server := &http.Server{
+		Addr:              ":8081",
+		Handler:           router,
+		ReadHeaderTimeout: 10 * time.Second,
+	}
+
+	err := server.ListenAndServe()
 	if err != nil {
 		panic(err)
 	}
