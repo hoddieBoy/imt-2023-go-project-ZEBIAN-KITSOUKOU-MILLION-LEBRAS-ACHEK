@@ -32,6 +32,7 @@ func main() {
 	for sensorType, alert := range alertConfig.SensorsAlert {
 		clients[sensorType] = mqtt.NewClient(&alertConfig.Broker, alert.ClientID)
 		err := clients[sensorType].Connect()
+
 		if err != nil {
 			log.Error("Error connecting to broker: %v", err)
 			os.Exit(1)
@@ -54,11 +55,11 @@ func handleAlertListening(clients map[string]*mqtt.Client, alerts map[string]con
 		err := clients[sensorType].Subscribe(
 			alert.IncomingTopic,
 			alert.IncomingQos,
-			checkValidRangeOnReception(clients[sensorType], alert,
-				"Alert: "+sensorType+" value is out of range ["+fmt.Sprintf("%f", alert.LowerBound)+", "+fmt.Sprintf("%f", alert.HigherBound)+"]"),
+			checkValidRangeOnReception(clients[sensorType], alert, sensorType),
 		)
+
 		if err != nil {
-			log.Error("An error occured while subscribing to topic %s: %v", alert.IncomingTopic, err)
+			log.Error("An error occurred while subscribing to topic %s: %v", alert.IncomingTopic, err)
 			os.Exit(1)
 		}
 	}
@@ -67,15 +68,21 @@ func handleAlertListening(clients map[string]*mqtt.Client, alerts map[string]con
 func checkValidRangeOnReception(
 	helperClient *mqtt.Client,
 	sensorAlert config.SensorAlert,
-	alertMessage string,
+	sensorType string,
 ) pahoMqtt.MessageHandler {
 	return func(mqttClient pahoMqtt.Client, message pahoMqtt.Message) {
 		sensorValue := getJSONValueAsIntFromMessage(message)
-		if !(sensorAlert.LowerBound <= sensorValue && sensorValue <= sensorAlert.HigherBound) {
-			err := helperClient.Publish(sensorAlert.OutgoingTopic, sensorAlert.OutgoingQos, false, alertMessage)
-			if err != nil {
-				panic(err)
-			}
+		alertMessage := "Alert: " + sensorType + " value is "
+
+		if sensorValue < sensorAlert.LowerBound {
+			alertMessage += "lower than " + fmt.Sprintf("%f", sensorAlert.LowerBound)
+		} else {
+			alertMessage += "higher than " + fmt.Sprintf("%f", sensorAlert.HigherBound)
+		}
+
+		err := helperClient.Publish(sensorAlert.OutgoingTopic, sensorAlert.OutgoingQos, false, alertMessage)
+		if err != nil {
+			log.Warn("Error publishing alert message: %v", err)
 		}
 	}
 }
@@ -86,5 +93,6 @@ func getJSONValueAsIntFromMessage(message pahoMqtt.Message) float64 {
 		log.Warn("Unable to retrieve value from message: %v", err)
 		return 0
 	}
+
 	return measurement.Value
 }

@@ -20,11 +20,7 @@ func (c *API) Validate() error {
 		return fmt.Errorf("port is empty")
 	}
 
-	if err := c.Database.Validate(); err != nil {
-		return err
-	}
-
-	return nil
+	return c.Database.Validate()
 }
 
 func LoadDefaultAPIConfig() (*API, error) {

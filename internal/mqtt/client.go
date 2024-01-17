@@ -11,7 +11,6 @@ type Client struct {
 }
 
 func NewClient(config *Config, clientID string) *Client {
-
 	opts := mqtt.NewClientOptions().AddBroker(config.GetServerAddress()).SetClientID(clientID)
 
 	if config.Username != "" {

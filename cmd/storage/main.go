@@ -10,7 +10,7 @@ import (
 	"imt-atlantique.project.group.fr/meteo-airport/internal/storage"
 )
 
-func createManager(storageConfig *config.Storage) *storage.Manager {
+func createAndConnectClient(storageConfig *config.Storage) *mqtt.Client {
 	client := mqtt.NewClient(&storageConfig.Broker.Config, storageConfig.Broker.ClientID)
 
 	if connexionErr := client.Connect(); connexionErr != nil {
@@ -18,39 +18,59 @@ func createManager(storageConfig *config.Storage) *storage.Manager {
 		os.Exit(1)
 	}
 
+	return client
+}
+
+func registerInfluxDBRecorder(manager *storage.Manager, measurement string, setting config.Setting) {
+	log.Info("Registering InfluxDB recorder for measurement %s", measurement)
+
+	influxDBRecorder, err := storage.NewInfluxDBRecorder(setting.InfluxDB)
+	if err != nil {
+		log.Error("Error creating InfluxDB recorder: %v", err)
+		os.Exit(1)
+	}
+
+	err = manager.AddRecorder(sensor.MeasurementType(measurement), setting.Topic, setting.Qos, influxDBRecorder)
+	if err != nil {
+		log.Error("Error adding recorder: %v", err)
+		os.Exit(1)
+	}
+}
+
+func registerCSVRecorder(manager *storage.Manager, measurement string, setting config.Setting) {
+	log.Info("Registering CSV recorder for measurement %s", measurement)
+
+	csvRecorder, _ := storage.NewCSVRecorder(setting.CSV)
+	err := manager.AddRecorder(sensor.MeasurementType(measurement), setting.Topic, setting.Qos, csvRecorder)
+
+	if err != nil {
+		log.Error("Error adding recorder: %v", err)
+		os.Exit(1)
+	}
+
+	if _, err := os.Stat(setting.CSV.PathDirectory); os.IsNotExist(err) {
+		log.Info("Creating the directory for saving the CSV files...")
+
+		err := os.Mkdir(setting.CSV.PathDirectory, 0755)
+
+		if err != nil {
+			log.Error("Error creating the directory for saving the CSV files: %v", err)
+			os.Exit(1)
+		}
+	}
+}
+
+func createManager(storageConfig *config.Storage) *storage.Manager {
+	client := createAndConnectClient(storageConfig)
 	manager := storage.NewManager(client)
 
 	for measurement, setting := range storageConfig.Settings {
 		if setting.InfluxDB != (config.InfluxDBSettings{}) {
-			log.Info("Registering InfluxDB recorder for measurement %s", measurement)
-			influxDBRecorder, _ := storage.NewInfluxDBRecorder(setting.InfluxDB)
-			err := manager.AddRecorder(sensor.MeasurementType(measurement), setting.Topic, setting.Qos, influxDBRecorder)
-			if err != nil {
-				log.Error("Error adding recorder: %v", err)
-				os.Exit(1)
-			}
+			registerInfluxDBRecorder(manager, measurement, setting)
 		}
 
 		if setting.CSV != (config.CSVSettings{}) {
-			log.Info("Registering CSV recorder for measurement %s", measurement)
-
-			csvRecorder, _ := storage.NewCSVRecorder(setting.CSV)
-			err := manager.AddRecorder(sensor.MeasurementType(measurement), setting.Topic, setting.Qos, csvRecorder)
-			if err != nil {
-				log.Error("Error adding recorder: %v", err)
-				os.Exit(1)
-			}
-
-			if _, err := os.Stat(setting.CSV.PathDirectory); os.IsNotExist(err) {
-				log.Info("Creating the directory for saving the CSV files...")
-
-				err := os.Mkdir(setting.CSV.PathDirectory, 0755)
-
-				if err != nil {
-					log.Error("Error creating the directory for saving the CSV files: %v", err)
-					os.Exit(1)
-				}
-			}
+			registerCSVRecorder(manager, measurement, setting)
 		}
 	}
 

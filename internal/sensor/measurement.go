@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
 )
 
@@ -27,23 +26,14 @@ func (m *Measurement) String() string {
 }
 
 func (m *Measurement) ToJSON() ([]byte, error) {
-	payload, err := json.Marshal(m)
-	if err != nil {
-		log.Error("Failed to marshal measurement to JSON: %v", err)
-		return nil, err
-	}
-
-	return payload, nil
+	return json.Marshal(m)
 }
 
 func FromJSON(payload []byte) (*Measurement, error) {
 	var measurement Measurement
-	if err := json.Unmarshal(payload, &measurement); err != nil {
-		log.Error("Failed to unmarshal measurement from JSON: %v", err)
-		return nil, err
-	}
+	err := json.Unmarshal(payload, &measurement)
 
-	return &measurement, nil
+	return &measurement, err
 }
 
 func (m *Measurement) ToCSV(separator string, timeFormat string) string {
@@ -70,9 +60,5 @@ func (m *Measurement) PublishOnMQTT(client *mqtt.Client, qos byte, retained bool
 		return err
 	}
 
-	if err := client.Publish(topic, qos, retained, payload); err != nil {
-		return err
-	}
-
-	return nil
+	return client.Publish(topic, qos, retained, payload)
 }

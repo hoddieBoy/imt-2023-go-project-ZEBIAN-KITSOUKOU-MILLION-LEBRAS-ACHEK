@@ -60,7 +60,6 @@ func (s *Manager) subscribeToSensor(sensorType sensor.MeasurementType, topic str
 		for recorder := range s.recorders[sensorType] {
 			s.wg.Add(1)
 			go func(rec Recorder, meas *sensor.Measurement) {
-				log.Info("Recording measurement of type %s with recorder %v", sensorType, rec)
 				if err := rec.Record(meas); err != nil {
 					log.Warn("Error recording measurement of type %s with recorder %v: %v", sensorType, rec, err)
 				}

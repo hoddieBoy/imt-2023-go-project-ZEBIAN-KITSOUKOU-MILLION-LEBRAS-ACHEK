@@ -42,14 +42,7 @@ func InitializeSensor(config *config.SensorConfig) (*Sensor, error) {
 }
 
 func (s *Sensor) PublishData() error {
-	err := s.last.PublishOnMQTT(s.client, s.qos, false, s.publishTopic)
-
-	if err != nil {
-		log.Error(fmt.Sprintf("Failed to publish last to client: %v", err))
-		return err
-	}
-
-	return nil
+	return s.last.PublishOnMQTT(s.client, s.qos, false, s.publishTopic)
 }
 
 func (s *Sensor) UpdateLastMeasurement(value float64) {

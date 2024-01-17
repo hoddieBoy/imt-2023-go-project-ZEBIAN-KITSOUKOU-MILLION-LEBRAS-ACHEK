@@ -35,7 +35,6 @@ func (r *InfluxDBRecorder) RecordOnContext(ctx context.Context, m *sensor.Measur
 	defer r.mu.Unlock()
 
 	writeAPI := r.client.WriteAPIBlocking(r.org, r.bucket)
-	log.Info("Registering InfluxDB recorder for measurement %s", m.Type)
 
 	p := influxdb2.NewPointWithMeasurement(string(m.Type)).
 		AddTag("airport", m.AirportID).

@@ -7,16 +7,18 @@ import (
 )
 
 type Storage struct {
-	Settings map[string]struct {
-		InfluxDB InfluxDBSettings `yaml:"influxdb"`
-		CSV      CSVSettings      `yaml:"csv"`
-		Qos      byte
-		Topic    string
-	} `yaml:"settings"`
-	Broker struct {
+	Settings map[string]Setting `yaml:"settings"`
+	Broker   struct {
 		Config   mqtt.Config `yaml:"config"`
 		ClientID string      `yaml:"client_id"`
 	} `yaml:"broker"`
+}
+
+type Setting struct {
+	InfluxDB InfluxDBSettings `yaml:"influxdb"`
+	CSV      CSVSettings      `yaml:"csv"`
+	Qos      byte
+	Topic    string
 }
 
 type InfluxDBSettings struct {
@@ -32,42 +34,50 @@ type CSVSettings struct {
 	TimeFormat    string `yaml:"time_format"`
 }
 
+func (s *Setting) Validate() error {
+	if s.InfluxDB == (InfluxDBSettings{}) && s.CSV == (CSVSettings{}) {
+		return fmt.Errorf("influxdb and csv settings are empty")
+	}
+
+	if s.Qos > 2 {
+		return fmt.Errorf("qos must be between 0 and 2")
+	}
+
+	if s.InfluxDB != (InfluxDBSettings{}) {
+		if err := s.InfluxDB.Validate(); err != nil {
+			return err
+		}
+	}
+
+	if s.CSV != (CSVSettings{}) {
+		if err := s.CSV.Validate(); err != nil {
+			return err
+		}
+	}
+
+	if s.Topic == "" {
+		return fmt.Errorf("topic is empty")
+	}
+
+	return nil
+}
+
 func (c *Storage) Validate() error {
 	if len(c.Settings) == 0 {
 		return fmt.Errorf("settings is empty")
 	}
 
 	for _, settings := range c.Settings {
-		if settings.InfluxDB == (InfluxDBSettings{}) && settings.CSV == (CSVSettings{}) {
-			return fmt.Errorf("influxdb and csv settings are empty")
-		}
-
-		if settings.Qos < 0 || settings.Qos > 2 {
-			return fmt.Errorf("qos must be between 0 and 2")
-		}
-
-		if settings.InfluxDB != (InfluxDBSettings{}) {
-			if err := settings.InfluxDB.Validate(); err != nil {
-				return err
-			}
-		}
-
-		if settings.CSV != (CSVSettings{}) {
-			if err := settings.CSV.Validate(); err != nil {
-				return err
-			}
-		}
-
-		if settings.Topic == "" {
-			return fmt.Errorf("topic is empty")
+		if err := settings.Validate(); err != nil {
+			return err
 		}
 	}
 
-	if err := c.Broker.Config.Validate(); err != nil {
-		return err
+	if c.Broker.ClientID == "" {
+		return fmt.Errorf("client id is empty")
 	}
 
-	return nil
+	return c.Broker.Config.Validate()
 }
 
 func (c *InfluxDBSettings) Validate() error {

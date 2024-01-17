@@ -27,7 +27,7 @@ func (c *SensorConfig) Validate() error {
 		return err
 	}
 
-	if c.Broker.Qos < 0 || c.Broker.Qos > 2 {
+	if c.Broker.Qos > 2 {
 		return fmt.Errorf("qos must be between 0 and 2")
 	}
 
