@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
 
+	"imt-atlantique.project.group.fr/meteo-airport/internal/config"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
@@ -24,22 +26,36 @@ func windDataGeneration(actualPressure float64, min float64, max float64) float6
 }
 
 func main() {
+	args := os.Args[1:]
+
+	if len(args) == 0 {
+		log.Warn("No config file specified, using default path: config/config.yaml")
+	} else {
+		config.SetDefaultConfigFileName(args[0])
+	}
+
+	pressureSensorConfig, configErr := config.LoadDefaultSensorConfig()
+
+	if configErr != nil {
+		log.Error("Error loading pressureSensorConfig: %v", configErr)
+		os.Exit(1)
+	}
+
 	actualPressure := 1013.25
 	minimalValue := 875.0
 	maximalValue := 1083.8
 
-	sensor := sensor.Sensor{}
-	err := sensor.InitializeSensor(2, "CGD", "windSpeed",
-		actualPressure, "Km/h", time.Now())
+	pressureSensor, err := sensor.InitializeSensor(pressureSensorConfig)
 
 	if err != nil {
-		panic(err)
+		log.Error("Error initializing sensor: %v", err)
+		os.Exit(1)
 	}
 
 	for {
 		actualPressure = windDataGeneration(actualPressure, minimalValue, maximalValue)
-		sensor.ChangeValueMeasurement(actualPressure)
-		err := sensor.PublishData()
+		pressureSensor.UpdateLastMeasurement(actualPressure)
+		err := pressureSensor.PublishData()
 
 		if err != nil {
 			log.Error(fmt.Sprintf("Failed to publish data to client: %v", err))

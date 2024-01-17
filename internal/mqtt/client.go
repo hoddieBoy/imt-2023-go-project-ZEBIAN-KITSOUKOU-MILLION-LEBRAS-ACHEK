@@ -13,12 +13,12 @@ type Client struct {
 func NewClient(config *Config, clientID string) *Client {
 	opts := mqtt.NewClientOptions().AddBroker(config.GetServerAddress()).SetClientID(clientID)
 
-	if config.Server.Username != "" {
-		opts.SetUsername(config.Server.Username)
+	if config.Username != "" {
+		opts.SetUsername(config.Username)
 	}
 
-	if config.Server.Password != "" {
-		opts.SetPassword(config.Server.Password)
+	if config.Password != "" {
+		opts.SetPassword(config.Password)
 	}
 
 	opts.SetConnectionLostHandler(func(client mqtt.Client, err error) {
