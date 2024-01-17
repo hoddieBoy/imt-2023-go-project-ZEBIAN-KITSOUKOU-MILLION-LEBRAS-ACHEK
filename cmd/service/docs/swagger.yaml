@@ -28,6 +28,11 @@ paths:
         name: end
         required: true
         type: string
+      - description: Airport code
+        in: query
+        name: airport
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -37,6 +42,8 @@ paths:
             additionalProperties: true
             type: object
       summary: Get measurements in a specific time interval
+      tags:
+      - measurements
   /mean/:
     get:
       consumes:
@@ -49,9 +56,15 @@ paths:
         name: date
         required: true
         type: string
-      - description: Comma-separated list of measurement types (e.g., temperature,humidity,pressure,windSpeed)
+      - description: Comma-separated list of measurement types (e.g., temperature,
+          humidity, ...)
         in: query
         name: types
+        type: string
+      - description: Airport code
+        in: query
+        name: airport
+        required: true
         type: string
       produces:
       - application/json
@@ -62,6 +75,8 @@ paths:
             additionalProperties: true
             type: object
       summary: Get average measurement in a day
+      tags:
+      - measurements
 schemes:
 - http
 swagger: "2.0"

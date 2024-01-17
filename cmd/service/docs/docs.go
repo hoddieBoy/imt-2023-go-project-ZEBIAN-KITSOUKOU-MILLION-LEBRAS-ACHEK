@@ -24,6 +24,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "measurements"
+                ],
                 "summary": "Get measurements in a specific time interval",
                 "operationId": "measurement-interval",
                 "parameters": [
@@ -45,6 +48,13 @@ const docTemplate = `{
                         "type": "string",
                         "description": "End date in the format -Hh",
                         "name": "end",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Airport code",
+                        "name": "airport",
                         "in": "query",
                         "required": true
                     }
@@ -69,6 +79,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "measurements"
+                ],
                 "summary": "Get average measurement in a day",
                 "operationId": "avg-measurement-in-a-day",
                 "parameters": [
@@ -81,9 +94,16 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Comma-separated list of measurement types (e.g., temperature,humidity,pressure,windSpeed)",
+                        "description": "Comma-separated list of measurement types (e.g., temperature, humidity, ...)",
                         "name": "types",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Airport code",
+                        "name": "airport",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
