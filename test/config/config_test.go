@@ -16,23 +16,35 @@ func (c *MockConfig) Validate() error {
 	return nil
 }
 
+func createTempFileWithContent(content string) (string, error) {
+	tempFile, err := os.CreateTemp("", "config_test")
+	if err != nil {
+		return "", err
+	}
+
+	_, err = tempFile.WriteString(content)
+	if err != nil {
+		return "", err
+	}
+
+	return tempFile.Name(), nil
+}
+
 func TestRetrievePropertiesFromYaml(t *testing.T) {
-	tempFile, _ := os.CreateTemp("", "config_test")
+	tempFileName, err := createTempFileWithContent("someField: testValue")
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer func(name string) {
 		err := os.Remove(name)
 		if err != nil {
-			panic(err)
+			t.Fatal(err)
 		}
-	}(tempFile.Name())
-
-	_, err := tempFile.WriteString("someField: testValue")
-	if err != nil {
-		return
-	}
+	}(tempFileName)
 
 	cfg := &MockConfig{}
 
-	err = config.RetrievePropertiesFromYaml(tempFile.Name(), cfg)
+	err = config.RetrievePropertiesFromYaml(tempFileName, cfg)
 
 	assert.NoError(t, err)
 	assert.Equal(t, "testValue", cfg.SomeField)
@@ -42,12 +54,18 @@ func TestLoadDefaultConfig(t *testing.T) {
 	// Create a temporary config file in the expected location
 	err := os.MkdirAll("/path/to/config", os.ModePerm)
 	if err != nil {
-		return
+		t.Fatal(err)
 	}
-	err = os.WriteFile("/path/to/config/config.yaml", []byte("someField: testValue"), 0644)
+	tempFileName, err := createTempFileWithContent("someField: testValue")
 	if err != nil {
-		return
+		t.Fatal(err)
 	}
+	defer func(name string) {
+		err := os.Remove(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}(tempFileName)
 
 	cfg := &MockConfig{}
 

@@ -8,8 +8,8 @@ import (
 	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
 )
 
-func TestStorageValidationWithValidData(t *testing.T) {
-	storage := &config.Storage{
+func createValidStorage() *config.Storage {
+	return &config.Storage{
 		Settings: map[string]config.Setting{
 			"setting1": {
 				InfluxDB: config.InfluxDBSettings{
@@ -41,6 +41,10 @@ func TestStorageValidationWithValidData(t *testing.T) {
 			ClientID: "client1",
 		},
 	}
+}
+
+func TestStorageValidationWithValidData(t *testing.T) {
+	storage := createValidStorage()
 
 	err := storage.Validate()
 
@@ -48,22 +52,8 @@ func TestStorageValidationWithValidData(t *testing.T) {
 }
 
 func TestStorageValidationWithEmptySettings(t *testing.T) {
-	storage := &config.Storage{
-		Settings: map[string]config.Setting{},
-		Broker: struct {
-			Config   mqtt.Config `yaml:"config"`
-			ClientID string      `yaml:"client_id"`
-		}{
-			Config: mqtt.Config{
-				Protocol: "mqtt",
-				Port:     1883,
-				Host:     "testClient",
-				Username: "testUser",
-				Password: "testPassword",
-			},
-			ClientID: "client1",
-		},
-	}
+	storage := createValidStorage()
+	storage.Settings = map[string]config.Setting{}
 
 	err := storage.Validate()
 
@@ -72,38 +62,9 @@ func TestStorageValidationWithEmptySettings(t *testing.T) {
 }
 
 func TestStorageValidationWithInvalidQos(t *testing.T) {
-	storage := &config.Storage{
-		Settings: map[string]config.Setting{
-			"setting1": {
-				InfluxDB: config.InfluxDBSettings{
-					URL:          "http://localhost:8086",
-					Token:        "token",
-					Bucket:       "bucket",
-					Organization: "org",
-				},
-				CSV: config.CSVSettings{
-					PathDirectory: "/path/to/directory",
-					Separator:     ",",
-					TimeFormat:    "2006-01-02T15:04:05Z07:00",
-				},
-				Qos:   3,
-				Topic: "topic",
-			},
-		},
-		Broker: struct {
-			Config   mqtt.Config `yaml:"config"`
-			ClientID string      `yaml:"client_id"`
-		}{
-			Config: mqtt.Config{
-				Protocol: "mqtt",
-				Port:     1883,
-				Host:     "testClient",
-				Username: "testUser",
-				Password: "testPassword",
-			},
-			ClientID: "client1",
-		},
-	}
+	storage := createValidStorage()
+	setting := storage.Settings["setting1"]
+	setting.Qos = 3
 
 	err := storage.Validate()
 
@@ -112,38 +73,8 @@ func TestStorageValidationWithInvalidQos(t *testing.T) {
 }
 
 func TestStorageValidationWithEmptyClientID(t *testing.T) {
-	storage := &config.Storage{
-		Settings: map[string]config.Setting{
-			"setting1": {
-				InfluxDB: config.InfluxDBSettings{
-					URL:          "http://localhost:8086",
-					Token:        "token",
-					Bucket:       "bucket",
-					Organization: "org",
-				},
-				CSV: config.CSVSettings{
-					PathDirectory: "/path/to/directory",
-					Separator:     ",",
-					TimeFormat:    "2006-01-02T15:04:05Z07:00",
-				},
-				Qos:   1,
-				Topic: "topic",
-			},
-		},
-		Broker: struct {
-			Config   mqtt.Config `yaml:"config"`
-			ClientID string      `yaml:"client_id"`
-		}{
-			Config: mqtt.Config{
-				Protocol: "mqtt",
-				Port:     1883,
-				Host:     "testClient",
-				Username: "testUser",
-				Password: "testPassword",
-			},
-			ClientID: "",
-		},
-	}
+	storage := createValidStorage()
+	storage.Broker.ClientID = ""
 
 	err := storage.Validate()
 
