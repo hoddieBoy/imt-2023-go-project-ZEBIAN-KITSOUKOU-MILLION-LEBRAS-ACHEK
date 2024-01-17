@@ -1,0 +1,17 @@
+sensor:
+  airport_id: "CDG"
+  sensor_id: 1
+  topic: "airport/CDG/wind"
+  type: "windSpeed"
+  unit: "Km/h"
+  time_format: "2006-01-02T15:04:05Z07:00"
+
+broker:
+  client:
+    protocol: "tls"
+    host: "0d23650ad8334e8b96e162999382b62d.s2.eu.hivemq.cloud"
+    port: 8883
+    username: "arduino"
+    password: "not4nArduino"
+    client_id: "temperature-sensor-CDG-1"
+  qos: 1

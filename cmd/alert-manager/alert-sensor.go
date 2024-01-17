@@ -3,80 +3,96 @@ package main
 import (
 	"fmt"
 
+	"os"
+
 	pahoMqtt "github.com/eclipse/paho.mqtt.golang"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/config"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/mqtt"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 
 func main() {
-	config, err := mqtt.RetrieveMQTTPropertiesFromYaml("./config/hiveClientConfig.yaml")
+	args := os.Args[1:]
+
+	if len(args) == 0 {
+		log.Warn("No config file specified, using default path: config/config.yaml")
+	} else {
+		config.SetDefaultConfigFileName(args[0])
+	}
+
+	alertConfig, err := config.LoadDefaultAlertConfig()
+
 	if err != nil {
 		panic(err)
 	}
 
-	client := mqtt.NewClient(config, "anotherClientId")
-	if err := client.Connect(); err != nil {
-		panic(err)
+	clients := make(map[string]*mqtt.Client)
+
+	for sensorType, alert := range alertConfig.SensorsAlert {
+		clients[sensorType] = mqtt.NewClient(&alertConfig.Broker, alert.ClientID)
+		err := clients[sensorType].Connect()
+
+		if err != nil {
+			log.Error("Error connecting to broker: %v", err)
+			os.Exit(1)
+		}
 	}
 
-	defer client.Disconnect()
+	defer func() {
+		for _, client := range clients {
+			client.Disconnect()
+		}
+	}()
 
-	handleAlertListening(client)
+	handleAlertListening(clients, alertConfig.SensorsAlert)
 
 	select {}
 }
 
-func handleAlertListening(client *mqtt.Client) {
-	rootConfig, err := mqtt.RetrieveMQTTRootFromYaml()
-	if err != nil {
-		panic(err)
-	}
+func handleAlertListening(clients map[string]*mqtt.Client, alerts map[string]config.SensorAlert) {
+	for sensorType, alert := range alerts {
+		err := clients[sensorType].Subscribe(
+			alert.IncomingTopic,
+			alert.IncomingQos,
+			checkValidRangeOnReception(clients[sensorType], alert, sensorType),
+		)
 
-	err = client.Subscribe(rootConfig.Root.Sensor.Humidity,
-		1,
-		checkValidRangeOnReception(client,
-			rootConfig.Root.Alert.Humidity,
-			"Alert, Humidity sensor out of range"))
-	if err != nil {
-		panic(err)
-	}
-
-	err = client.Subscribe(rootConfig.Root.Sensor.Temperature,
-		1,
-		checkValidRangeOnReception(client,
-			rootConfig.Root.Alert.Temperature,
-			"Alert, Temperature sensor out of range"))
-	if err != nil {
-		panic(err)
-	}
-
-	err = client.Subscribe(rootConfig.Root.Sensor.Pressure,
-		1,
-		checkValidRangeOnReception(client,
-			rootConfig.Root.Alert.Pressure,
-			"Alert, pressure sensor out of range"))
-	if err != nil {
-		panic(err)
+		if err != nil {
+			log.Error("An error occurred while subscribing to topic %s: %v", alert.IncomingTopic, err)
+			os.Exit(1)
+		}
 	}
 }
 
 func checkValidRangeOnReception(
 	helperClient *mqtt.Client,
-	sensorAlert mqtt.SensorAlertType,
-	alertMessage string,
+	sensorAlert config.SensorAlert,
+	sensorType string,
 ) pahoMqtt.MessageHandler {
 	return func(mqttClient pahoMqtt.Client, message pahoMqtt.Message) {
 		sensorValue := getJSONValueAsIntFromMessage(message)
-		if !(sensorAlert.LowerBound <= sensorValue && sensorValue <= sensorAlert.HigherBound) {
-			err := helperClient.Publish(sensorAlert.EndPoint, 1, false, alertMessage)
-			if err != nil {
-				panic(err)
-			}
+		alertMessage := "Alert: " + sensorType + " value is "
+
+		if sensorValue < sensorAlert.LowerBound {
+			alertMessage += "lower than " + fmt.Sprintf("%f", sensorAlert.LowerBound)
+		} else {
+			alertMessage += "higher than " + fmt.Sprintf("%f", sensorAlert.HigherBound)
+		}
+
+		err := helperClient.Publish(sensorAlert.OutgoingTopic, sensorAlert.OutgoingQos, false, alertMessage)
+		if err != nil {
+			log.Warn("Error publishing alert message: %v", err)
 		}
 	}
 }
 
-func getJSONValueAsIntFromMessage(message pahoMqtt.Message) int {
-	// TODO
-	fmt.Println(string(message.Payload()))
-	return 50
+func getJSONValueAsIntFromMessage(message pahoMqtt.Message) float64 {
+	measurement, err := sensor.FromJSON(message.Payload())
+	if err != nil {
+		log.Warn("Unable to retrieve value from message: %v", err)
+		return 0
+	}
+
+	return measurement.Value
 }
