@@ -35,8 +35,9 @@ func TestRetrievePropertiesFromYaml(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	defer func(name string) {
-		err := os.Remove(name)
+		err = os.Remove(name)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -56,12 +57,15 @@ func TestLoadDefaultConfig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	tempFileName, err := createTempFileWithContent("someField: testValue")
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	defer func(name string) {
-		err := os.Remove(name)
+		err = os.Remove(name)
+
 		if err != nil {
 			t.Fatal(err)
 		}
