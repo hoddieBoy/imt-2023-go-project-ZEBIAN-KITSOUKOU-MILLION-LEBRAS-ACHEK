@@ -29,7 +29,9 @@ func main() {
 
 	temperatureSensor, err := sensor.InitializeSensor(tempSensorConfig)
 
-	if err != nil {panic(err)}
+	if err != nil {
+		panic(err)
+	}
 
 	temperature := 22.0
 	minimalValue := 20.0

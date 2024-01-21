@@ -41,7 +41,7 @@ func main() {
 		currentHumidity := readHumidity(humidity, minimalValue, maximalValue)
 		humiditySensor.UpdateLastMeasurement(currentHumidity)
 		err := humiditySensor.PublishData()
-		
+
 		if err != nil {
 			log.Error(fmt.Sprintf("Failed to publish data to client: %v", err))
 		}
