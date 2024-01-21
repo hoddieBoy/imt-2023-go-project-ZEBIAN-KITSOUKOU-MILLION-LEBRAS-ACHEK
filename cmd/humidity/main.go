@@ -29,7 +29,9 @@ func main() {
 
 	humiditySensor, err := sensor.InitializeSensor(humiditySensorConfig)
 
-	if err != nil {panic(err)}
+	if err != nil {
+		panic(err)
+	}
 
 	humidity := 50.0
 	minimalValue := 40.0

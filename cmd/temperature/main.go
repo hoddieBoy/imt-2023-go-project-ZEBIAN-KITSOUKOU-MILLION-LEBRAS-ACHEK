@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"os"
 	"time"
-	
+
 	"imt-atlantique.project.group.fr/meteo-airport/internal/config"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
@@ -58,7 +58,7 @@ func readTemp(currentTemperature float64, min float64, max float64) float64 {
 		simulatedTemperature = max
 	}
 
-	simulatedTemperature = simulatedTemperature + rand.Float64() * 2
+	simulatedTemperature += rand.Float64() * 2
 
 	return simulatedTemperature
 }
