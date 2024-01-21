@@ -60,6 +60,7 @@ DHT dht(DHTPIN, DHTTYPE);
 // Variables to hold sensor readings
 float temp;
 float hum;
+int QoS = 1;
 
 AsyncMqttClient mqttClient;
 TimerHandle_t mqttReconnectTimer;
@@ -69,6 +70,10 @@ unsigned long previousMillis = 0;   // Stores last time temperature was publishe
 const long interval = 10000;        // Interval at which to publish sensor readings
 
 time_t current_time = time(nullptr);
+
+const char* ntpServer = "pool.ntp.org";
+const long  gmtOffset_sec = 3600;
+const int   daylightOffset_sec = 3600;
 
 void connectToWifi() {
   Serial.println("Connecting to Wi-Fi...");
@@ -89,6 +94,8 @@ void WiFiEvent(WiFiEvent_t event) {
       Serial.println("IP address: ");
       Serial.println(WiFi.localIP());
       connectToMqtt();
+      configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+      printLocalTime();
       break;
     case SYSTEM_EVENT_STA_DISCONNECTED:
       Serial.println("WiFi lost connection");
@@ -165,13 +172,9 @@ void setup() {
 
   mqttClient.onConnect(onMqttConnect);
   mqttClient.onDisconnect(onMqttDisconnect);
-  //mqttClient.onSubscribe(onMqttSubscribe);
-  //mqttClient.onUnsubscribe(onMqttUnsubscribe);
   mqttClient.onPublish(onMqttPublish);
   mqttClient.setServer(MQTT_HOST, MQTT_PORT);
   mqttClient.setCredentials(ID, PASS);
-  // If your broker requires authentication (username and password), set them below
-  //mqttClient.setCredentials("REPlACE_WITH_YOUR_USER", "REPLACE_WITH_YOUR_PASSWORD");
   connectToWifi();
 }
 
@@ -208,12 +211,12 @@ void loop() {
     }
     
     // Publish an MQTT message on topic esp32/dht/temperature
-    uint16_t packetIdPub1 = mqttClient.publish(MQTT_PUB_TEMP, 1, true, jsonT.c_str());                            
+    uint16_t packetIdPub1 = mqttClient.publish(MQTT_PUB_TEMP, QoS, true, jsonT.c_str());                            
     Serial.printf("Publishing on topic %s at QoS 1, packetId: %i", MQTT_PUB_TEMP, packetIdPub1);
     Serial.printf("Message: %.2f \n", temp);
 
     // Publish an MQTT message on topic esp32/dht/humidity
-    uint16_t packetIdPub2 = mqttClient.publish(MQTT_PUB_HUM, 1, true, jsonH.c_str());                            
+    uint16_t packetIdPub2 = mqttClient.publish(MQTT_PUB_HUM, QoS, true, jsonH.c_str());                            
     Serial.printf("Publishing on topic %s at QoS 1, packetId %i: ", MQTT_PUB_HUM, packetIdPub2);
     Serial.printf("Message: %.2f \n", hum);
   }

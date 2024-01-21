@@ -3,107 +3,65 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
 	
-	sensor "imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
+ 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/config"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
 )
 
-
-func createClientOptions(brokerURI string, clientId string) *mqtt.ClientOptions {
-	opts := mqtt.NewClientOptions()
-	opts.AddBroker(brokerURI)
-	// opts.SetUsername(username)
-	// opts.SetPassword(password)
-	opts.SetClientID(clientId)
-	return opts
-}
-
-func connect(brokerURI string, clientId string) mqtt.Client {
-	opts := createClientOptions(brokerURI, clientId)
-	client := mqtt.NewClient(opts)
-	token := client.Connect()
-	
-	for !token.WaitTimeout(3 * time.Second) {
-	}
-
-	if err := token.Error(); err != nil {
-		panic(err)
-	}
-
-	return client
-}
-
 func main() {
-	config, err := mqtt_helper.RetrieveMQTTPropertiesFromYaml("./config/hiveClientConfig.yaml")
+	args := os.Args[1:]
 
-	sensor.sensor.InitializeSensor()
+	if len(args) == 0 {
+		log.Warn("No config file specified, using default path: config/config.yaml")
+	} else {
+		config.SetDefaultConfigFileName(args[0])
+	}
 
-	sensor_id = 1
-	sensor.sensor.GenerateData(sensor_id, "CDG", sensor.Temperature, 20, "°C", time.Now())
-	sensor.sensor.GenerateData(sensor_id, "CDG", sensor.Humidity, 30, "%", time.Now())
+	tempSensorConfig, configErr := config.LoadDefaultSensorConfig()
 
+	if configErr != nil {
+		log.Error("Error loading tempSensorConfig: %v", configErr)
+		os.Exit(1)
+	}
+
+	temperatureSensor, err := sensor.InitializeSensor(tempSensorConfig)
 
 	if err != nil {panic(err)}
 
-	var invoiceIndex int64 = 0
-	// measurementT := sensor.Measurement{
-	// 	SensorID:  1,
-	// 	AirportID: "CDG",
-	// 	Type:      sensor.Temperature,
-	// 	Value:     20,
-	// 	Unit:      "°C",
-	// 	Timestamp: time.Now(),
-	// }
-	// measurementH := sensor.Measurement{
-	// 	SensorID:  invoiceIndex,
-	// 	AirportID: "CDG",
-	// 	Type:      sensor.Humidity,
-	// 	Value:     30,
-	// 	Unit:      "%",
-	// 	Timestamp: time.Now(),
-	// }
+	temperature := 22.0
+	minimalValue := 20.0
+	maximalValue := 25.0
 
-
-	clientID := "jam_client"
-
-	// client := mqtt_helper.NewClient(config, clientID)
-	// client.Connect()
-	// username := "emqx"
-	// password := ""
-
-	// Send fake temperature and humidity data every 3 seconds for 
-	// temperature and 5 seconds for humidity
 	for {
-		// Generate random temperature and humidity values
-		temperature := 20 + rand.Float64() * (30 - 20)
-		//humidity := 40 + rand.Float64() * (60 - 40)
 
-		invoiceIndex++
+		currentTemperature := readTemp(temperature, minimalValue, maximalValue)
+		temperatureSensor.UpdateLastMeasurement(currentTemperature)
+		err := temperatureSensor.PublishData()
 
-		// measurementT.SensorID = invoiceIndex
-		// measurementT.Timestamp = time.Now()
-		// measurementT.Value = temperature
+		if err != nil {
+			log.Error(fmt.Sprintf("Failed to publish data to client: %v", err))
+		}
 
-		sensor.sensor.ChangeValueMeasurement(temperature)
-
-		// measurementH.SensorID = invoiceIndex
-		// measurementH.Timestamp = time.Now()
-		// measurementH.Value = humidity
-
-		// Publish temperature data to MQTT topic
-		// token := client.Publish("capteur/T", 2, false, fmt.Sprintf("%.2f", temperature))
-		measurementT.PublishOnMQTT(2, false, client)
-		// token.Wait()
-		fmt.Printf("%#v",measurementT)
-
-		// Publish humidity data to MQTT topic
-		// token = client.Publish("capteur/H", 2, false, fmt.Sprintf("%.2f", humidity))
-		measurementH.PublishOnMQTT(2, false, client)
-		fmt.Printf("%#v",measurementH)
-		// token.Wait()
-
-		// Sleep for 3 seconds for temperature and 5 seconds for humidity
-		time.Sleep(4 * time.Second)
+		fmt.Printf("Humidity: %f\n", humidity)
+		time.Sleep(3 * time.Second)
 	}
 }
 
+func readTemp(currentTemperature float64, min float64, max float64) float64 {
+
+	simulatedTemperature := currentTemperature
+
+	if (simulatedTemperature < min) {
+		simulatedTemperature = min
+	}
+	if (simulatedTemperature > max) {
+		simulatedTemperature = max
+	}
+
+	simulatedTemperature = simulatedTemperature + rand.Float64() * 2
+
+	return simulatedTemperature
+}
