@@ -6,9 +6,9 @@ import (
 	"os"
 	"time"
 	
- 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/config"
 	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 
 func main() {
@@ -36,7 +36,6 @@ func main() {
 	maximalValue := 25.0
 
 	for {
-
 		currentTemperature := readTemp(temperature, minimalValue, maximalValue)
 		temperatureSensor.UpdateLastMeasurement(currentTemperature)
 		err := temperatureSensor.PublishData()
@@ -45,13 +44,11 @@ func main() {
 			log.Error(fmt.Sprintf("Failed to publish data to client: %v", err))
 		}
 
-		fmt.Printf("Humidity: %f\n", humidity)
 		time.Sleep(3 * time.Second)
 	}
 }
 
 func readTemp(currentTemperature float64, min float64, max float64) float64 {
-
 	simulatedTemperature := currentTemperature
 
 	if (simulatedTemperature < min) {

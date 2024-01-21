@@ -11,8 +11,6 @@ import (
 	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 
-
-
 func main() {
 	args := os.Args[1:]
 
@@ -36,6 +34,7 @@ func main() {
 	humidity := 50.0
 	minimalValue := 40.0
 	maximalValue := 60.0
+
 	for {
 		currentHumidity := readHumidity(humidity, minimalValue, maximalValue)
 		humiditySensor.UpdateLastMeasurement(currentHumidity)
@@ -52,7 +51,6 @@ func main() {
 
 func readHumidity(currentHumidity float64, min float64, max float64) float64 {
 	// Simulating humidity between 40 and 60%
-
 	simulatedHumidity := currentHumidity
 
 	if (simulatedHumidity < min) {
@@ -62,7 +60,7 @@ func readHumidity(currentHumidity float64, min float64, max float64) float64 {
 		simulatedHumidity = max
 	}
 
-	simulatedHumidity = simulatedHumidity + rand.Float64() * 2
+	simulatedHumidity += rand.Float64() * 2
 
 	return simulatedHumidity
 }
