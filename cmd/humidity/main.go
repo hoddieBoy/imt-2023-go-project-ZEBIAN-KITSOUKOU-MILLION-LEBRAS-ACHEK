@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 	"time"
 
-	sensor "imt-atlantique.project.group.fr/meteo-airport/internal/sensor/sensor"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/log"
+	"imt-atlantique.project.group.fr/meteo-airport/internal/sensor"
 )
 
 
@@ -14,25 +14,40 @@ import (
 func main() {
 	// Simulating humidity readings every second
 	var invoiceIndex int64 = 0
+	var sensor_id int64 = 1
+	var humiditySetup float64 = 40.0
 
-	sensor.InitializeSensor()
-
-	sensor_id = 1
-	sensor.GenerateData(sensor_id, "CDG", sensor.Humidity, 30, "%", time.Now())
+	sensor := sensor.Sensor{}
+	err := sensor.InitializeSensor(sensor_id, "CDG", "humidity", 30, "%", time.Now())
+//	sensor.GenerateData(sensor_id, "CDG", sensor.Humidity, 30, "%", time.Now())
 	if err != nil {panic(err)}
 
-	
-
 	for {
-		humidity := readHumidity()
+		humidity := readHumidity(humiditySetup)
 		invoiceIndex++
-		sensor.ChangeValueMeasurement(temperature)
-		fmt.Printf("Humidity: reading on\n")
+		sensor.ChangeValueMeasurement(humidity)
+		err := sensor.PublishData()
+		if err != nil {
+			log.Error(fmt.Sprintf("Failed to publish data to client: %v", err))
+		}
+		fmt.Printf("Humidity: %f\n", humidity)
 		time.Sleep(4 * time.Second)
 	}
 }
 
-func readHumidity() float64 {
+func readHumidity(currentHumidity float64) float64 {
 	// Simulating humidity between 40 and 60%
-	return 40 + rand.Float64() * (60 - 40)
+
+	simulatedHumidity := currentHumidity
+
+	if (simulatedHumidity < 40) {
+		simulatedHumidity = 40
+	}
+	if (simulatedHumidity > 60) {
+		simulatedHumidity = 60
+	}
+
+	simulatedHumidity = simulatedHumidity + rand.Float64() * 2
+
+	return simulatedHumidity
 }

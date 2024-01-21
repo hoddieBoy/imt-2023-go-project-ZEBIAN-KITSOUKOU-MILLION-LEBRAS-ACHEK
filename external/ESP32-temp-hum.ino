@@ -18,8 +18,8 @@ extern "C" {
 #define MQTT_PORT 1883
 
 // Temperature MQTT Topics
-#define MQTT_PUB_TEMP "ontopic/T"
-#define MQTT_PUB_HUM  "ontopic/H"
+#define MQTT_PUB_TEMP "airport/T"
+#define MQTT_PUB_HUM  "airport/H"
 
 // Digital pin connected to the DHT sensor
 #define DHTPIN 4  
@@ -28,6 +28,9 @@ extern "C" {
 
 #define ID "Enter your ID"
 #define PASS "Enter your password"
+
+char buffer[80];
+time_t now = time(nullptr);
 
 enum class MeasurementType {
   TEMPERATURE,
@@ -43,6 +46,13 @@ struct Measurement {
   String unit;
   time_t timestamp;  // This is the C++ equivalent of Go's time.Time
 };
+
+Measurement measureH;
+Measurement measureT;
+
+// Creation of Json object
+StaticJsonDocument<200> toJsonH;
+StaticJsonDocument<200> toJsonT;
 
 // Initialize DHT sensor
 DHT dht(DHTPIN, DHTTYPE);
@@ -67,6 +77,7 @@ void connectToWifi() {
 
 void connectToMqtt() {
   Serial.println("Connecting to MQTT...");
+  mqttClient.setCredentials(ID, PASS);
   mqttClient.connect();
 }
 
@@ -111,6 +122,41 @@ void setup() {
   Serial.println();
 
   dht.begin();
+
+  measureH.sensor_id = 1;
+  measureH.airport_id = "CDG"; 
+  measureH.type = MeasurementType::TEMPERATURE; 
+  measureH.value = 25.0; 
+  measureH.unit = "C";  
+  measureH.timestamp = time(nullptr); 
+
+  measureT.sensor_id = 1;
+  measureT.airport_id = "CDG"; 
+  measureT.type = MeasurementType::HUMIDITY; 
+  measureT.value = 40.0; 
+  measureT.unit = "%";  
+  measureT.timestamp = time(nullptr); 
+
+
+  toJsonH["sensor_id"] = measureH.sensor_id;
+  toJsonH["airport_id"] = measureH.airport_id.c_str();
+  toJsonH["type"] = "HUMIDITY";
+  toJsonH["value"] = measureH.value;
+  toJsonH["unit"] = measureH.unit.c_str();
+  toJsonH["timestamp"] = measureH.timestamp;
+
+  toJsonT["sensor_id"] = measureT.sensor_id;
+  toJsonT["airport_id"] = measureT.airport_id.c_str();
+  toJsonT["type"] = "TEMPERATURE";
+  toJsonT["value"] = measureT.value;
+  toJsonT["unit"] = measureT.unit.c_str();
+  toJsonT["timestamp"] = measureT.timestamp;
+
+  String jsonH;
+  String jsonT;
+
+  serializeJson(toJsonH, jsonH);
+  serializeJson(toJsonT, jsonT);
   
   mqttReconnectTimer = xTimerCreate("mqttTimer", pdMS_TO_TICKS(2000), pdFALSE, (void*)0, reinterpret_cast<TimerCallbackFunction_t>(connectToMqtt));
   wifiReconnectTimer = xTimerCreate("wifiTimer", pdMS_TO_TICKS(2000), pdFALSE, (void*)0, reinterpret_cast<TimerCallbackFunction_t>(connectToWifi));
@@ -134,11 +180,26 @@ void loop() {
   if (currentMillis - previousMillis >= interval) {
     // Save the last time a new reading was published
     previousMillis = currentMillis;
-    // New DHT sensor readings
-    hum = dht.readHumidity();
+
     // Read temperature as Celsius
     temp = dht.readTemperature();
+
+    // New DHT sensor readings
+    hum = dht.readHumidity();
+
+    toJsonH["value"] = hum;
+    toJsonT["value"] = temp;
+
+    struct tm* timeinfo = localtime(&now);
+    strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
+    String timestamp = String(buffer);
+    toJsonH["timestamp"] = timestamp;
+    toJsonT["timestamp"] = timestamp;
     //temp = dht.readTemperature(true);
+
+
+    serializeJson(toJsonH, jsonH);
+    serializeJson(toJsonT, jsonT);
 
     // Check if any reads failed and exit early (to try again).
     if (isnan(temp) || isnan(hum)) {
@@ -147,12 +208,12 @@ void loop() {
     }
     
     // Publish an MQTT message on topic esp32/dht/temperature
-    uint16_t packetIdPub1 = mqttClient.publish(MQTT_PUB_TEMP, 1, true, String(temp).c_str());                            
+    uint16_t packetIdPub1 = mqttClient.publish(MQTT_PUB_TEMP, 1, true, jsonT.c_str());                            
     Serial.printf("Publishing on topic %s at QoS 1, packetId: %i", MQTT_PUB_TEMP, packetIdPub1);
     Serial.printf("Message: %.2f \n", temp);
 
     // Publish an MQTT message on topic esp32/dht/humidity
-    uint16_t packetIdPub2 = mqttClient.publish(MQTT_PUB_HUM, 1, true, String(hum).c_str());                            
+    uint16_t packetIdPub2 = mqttClient.publish(MQTT_PUB_HUM, 1, true, jsonH.c_str());                            
     Serial.printf("Publishing on topic %s at QoS 1, packetId %i: ", MQTT_PUB_HUM, packetIdPub2);
     Serial.printf("Message: %.2f \n", hum);
   }
