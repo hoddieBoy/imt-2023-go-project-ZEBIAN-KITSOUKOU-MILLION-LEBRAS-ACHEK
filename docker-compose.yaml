@@ -19,15 +19,11 @@ services:
             - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_BUCKET}
             - DOCKER_INFLUXDB_INIT_RETENTION=${INFLUXDB_RETENTION}
             - DOCKER_INFLUXDB_INIT_DB=${INFLUXDB_DB}
-        labels:
-            - "traefik.enable=true"
-            - "traefik.http.routers.influxdb.rule=Host(`influxdb.metrics.meteo-airport.localhost`)"
-            - "traefik.http.services.influxdb.loadbalancer.server.port=8086"
         healthcheck:
-            test: ["CMD", "curl", "-f", "http://localhost:8086/ping"]
-            interval: 30s
-            timeout: 10s
-            retries: 5
+          test: [ "CMD", "curl", "-f", "http://localhost:8086/ping" ]
+          interval: 30s
+          timeout: 10s
+          retries: 5
 
     ## Mosquitto - For MQTT broker
     mosquitto:
@@ -54,23 +50,6 @@ services:
         restart: unless-stopped
         ports:
             - "81:80"
-        labels:
-            - "traefik.enable=true"
-            - "traefik.http.routers.mqtt-web-client.rule=Host(`mqttx.meteo-airport.localhost`)"
-            - "traefik.http.services.mqtt-web-client.loadbalancer.server.port=80"
-
-    ## Reverse Proxy - For accessing each service by subdomain
-    reverse-proxy:
-        container_name: reverse-proxy
-        build:
-            context: ./build/traefik
-            dockerfile: Dockerfile
-        restart: unless-stopped
-        ports:
-            - "80:80"
-            - "443:443"
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock:ro
 
 # Volumes
 volumes:

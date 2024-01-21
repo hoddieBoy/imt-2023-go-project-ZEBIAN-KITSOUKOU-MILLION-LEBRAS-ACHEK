@@ -8,7 +8,3 @@ const (
 	Pressure    MeasurementType = "pressure"
 	WindSpeed   MeasurementType = "windSpeed"
 )
-
-func (t MeasurementType) GetTopic() string {
-	return "airport/+/" + string(t)
-}
