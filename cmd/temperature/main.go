@@ -53,10 +53,11 @@ func main() {
 func readTemp(currentTemperature float64, min float64, max float64) float64 {
 	simulatedTemperature := currentTemperature
 
-	if (simulatedTemperature < min) {
+	if simulatedTemperature < min {
 		simulatedTemperature = min
 	}
-	if (simulatedTemperature > max) {
+
+	if simulatedTemperature > max {
 		simulatedTemperature = max
 	}
 

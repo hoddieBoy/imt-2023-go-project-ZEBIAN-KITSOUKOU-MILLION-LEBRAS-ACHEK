@@ -55,10 +55,11 @@ func readHumidity(currentHumidity float64, min float64, max float64) float64 {
 	// Simulating humidity between 40 and 60%
 	simulatedHumidity := currentHumidity
 
-	if (simulatedHumidity < min) {
+	if simulatedHumidity < min {
 		simulatedHumidity = min
 	}
-	if (simulatedHumidity > max) {
+
+	if simulatedHumidity > max {
 		simulatedHumidity = max
 	}
 
