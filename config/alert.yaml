@@ -8,7 +8,7 @@ broker:
 
 sensors_alert:
   windSpeed:
-    incoming_topic: "airport/CDG/wind/+"
+    incoming_topic: "airport/CDG/wind"
     outgoing_topic: "alerts/airport/CDG/wind"
     lower_bound: 20
     higher_bound: 30

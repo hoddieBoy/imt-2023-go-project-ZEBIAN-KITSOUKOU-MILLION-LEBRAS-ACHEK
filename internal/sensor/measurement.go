@@ -53,12 +53,11 @@ func MeasurementFieldNames(separator string) string {
 
 // PublishOnMQTT publishes a measurement to the MQTT broker
 func (m *Measurement) PublishOnMQTT(client *mqtt.Client, qos byte, retained bool, baseTopic string) error {
-	topic := baseTopic + "/" + m.Timestamp.Format("2006-01-02")
 	payload, err := m.ToJSON()
 
 	if err != nil {
 		return err
 	}
 
-	return client.Publish(topic, qos, retained, payload)
+	return client.Publish(baseTopic, qos, retained, payload)
 }

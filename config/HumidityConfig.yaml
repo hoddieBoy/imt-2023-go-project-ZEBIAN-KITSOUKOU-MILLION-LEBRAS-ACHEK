@@ -1,9 +1,9 @@
 sensor:
   airport_id: "CDG"
   sensor_id: 1
-  topic: "airport/CDG/wind"
-  type: "windSpeed"
-  unit: "Km/h"
+  topic: "airport/CDG/humidity"
+  type: "humidity"
+  unit: "%"
   time_format: "2006-01-02T15:04:05Z07:00"
 
 broker:
@@ -13,5 +13,5 @@ broker:
     port: 8883
     username: "arduino"
     password: "not4nArduino"
-    client_id: "wind-sensor-CDG-1"
+    client_id: "humidity-sensor-CDG-1"
   qos: 1
