@@ -31,7 +31,7 @@ func RetrievePropertiesFromYaml(filePath string, cfg Config) error {
 		return err
 	}
 
-	return nil
+	return cfg.Validate()
 }
 
 func LoadDefaultConfig(cfg Config) error {
