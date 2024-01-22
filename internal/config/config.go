@@ -36,7 +36,6 @@ func RetrievePropertiesFromYaml(filePath string, cfg Config) error {
 
 func LoadDefaultConfig(cfg Config) error {
 	exePath, err := os.Executable()
-	// _, filename, _, ok := runtime.Caller(0)
 	if err != nil {
 		return fmt.Errorf("failed to get executable path: %w", err)
 	}
