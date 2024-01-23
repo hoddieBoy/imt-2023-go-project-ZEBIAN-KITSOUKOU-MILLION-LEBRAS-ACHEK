@@ -2,27 +2,46 @@
 
 ## Description
 
-This project implements a system for collecting and retrieving meteorological data from airport sensors.
-Data collected includes temperature, atmospheric pressure and wind speed.
+Meteo Airport is a comprehensive project that simulates a weather station at an airport. It collects data from various
+sensors, including temperature, humidity, wind speed, and pressure. The data is then published to an MQTT broker and
+stored in InfluxDB. The project also includes an alert manager that listens to the MQTT broker and triggers alerts based
+on predefined conditions.
 
-## Structure
+## Features
 
-The project is structured as follows:
+- Sensor data simulation for temperature, humidity, wind speed, and pressure
+- MQTT publisher for sensor data
+- Storage manager for storing sensor data in InfluxDB or in CSV files
+- Alert manager for triggering alerts based on predefined conditions
+- REST API for retrieving sensor data and alerts
+- Swagger documentation for the REST API
+- Test suite for validating the project
+- Linter for ensuring code quality
+- Docker Compose for running services locally
+- Makefile for automating common tasks
+- CI/CD pipeline for automating the build and test process
 
-- `api/` contains OpenAPI/Swagger specifications, JSON schema files, protocol definition files
-- `cmd/` contains all main applications for this project
-- `internal/` contains the internal code specific to the project
-- `docs/` contains the documentation for the project
+## Project structure
+
+The project is structured into several packages, each responsible for a specific functionality:
+
+- `cmd/` contains the mains applications(Storage manager, Alert manager, Sensor data simulation, REST API)
+- `internal/` contains the internal packages used by the applications
+- `config/` contains the configuration files for the applications
 - `scripts/` contains the scripts for building, testing, and other operations
 - `test/` contains the tests for the project
+- `external/` contains the external packages used by the project
 
-## Installation
+## Getting started
 
-### Requirements
+### Prerequisites
 
-- Go 1.21.4
+- Go 1.21.4 or compatible
 - Make 3.81 or compatible
 - Docker 24.0.6 or compatible
+- An MQTT broker(
+  e.g. [Mosquitto](https://mosquitto.org/), [HiveMQ](https://www.hivemq.com/), [EMQ X](https://www.emqx.io/))
+- An InfluxDB database)
 
 ### Installation steps
 
@@ -31,16 +50,26 @@ The project is structured as follows:
     git clone https://github.com/jarhead-killgrave/imt-2023-go-project-ZEBIAN-KITSOUKOU-MILLION-LEBRAS-ACHEK.git
     ```
 
-2. Copy the `.env.dev` file to `.env`, and edit it to match your configuration:
+2. Navigate to the project directory:
+    ```bash
+    cd imt-2023-go-project-ZEBIAN-KITSOUKOU-MILLION-LEBRAS-ACHEK
+    ```
+
+3. Copy the `.env.dev` file to `.env`, and edit it to match your configuration:
    ```bash
-   cp .env.example .env
+   cp .env.dev .env
    ```
    or for Windows:
    ```bash
-	copy .env.example .env
+    copy .env.dev .env
    ```
 
-3. Initialize all necessary services:
+4. Build the applications:
+   ```bash
+   make build
+   ```
+
+5. Initialize all necessary services:
    ```bash
    make init
    ```
@@ -49,13 +78,54 @@ The project is structured as follows:
    docker compose up -d
    ```
    After initialization, you should be able to access the following services:
-	- [http://influxdb.metrics.meteo-airport.localhost](http://influxdb.metrics.meteo-airport.localhost) *(InfluxDB)*
+	- [http://localhost:8086](http://localhost:8086) for InfluxDB
+	- [http://localhost:1883](http://localhost:1883) for the MQTT broker
 
-## Usage
+6. For running a specific application, you can use the following commands:
+   ```bash
+   ./<application_name> <configuration_file>
+   ```
+   For example, to run the storage manager:
+   ```bash
+   ./storage-manager config/storage-manager.yaml
+   ```
+   or for Windows:
+   ```bash
+   .\<application_name>.exe <configuration_file>
+   ```
+   For example, to run the storage manager:
+   ```bash
+   .\storage-manager.exe config\storage-manager.yaml
+   ```
 
-### Run the project
+You can run all the applications at once by running the following command:
 
-### Run the linter
+```bash
+make run
+```
+
+# Configuration
+
+The project uses YAML files for configuration. You can find the configuration files in the `config/` directory.
+Each application has its own configuration file. The configuration contains all the necessary information for running
+the application, including the MQTT broker address, the InfluxDB address, the topic names...
+
+# Testing
+
+The project includes a test suite for validating the project. The tests are located in the `test/` directory.
+You can run the tests with the following command:
+
+```bash
+make test
+```
+
+or with command line:
+
+```bash
+go test ./test/...
+```
+
+# Linter
 
 Before your branch is merged, [golangci-lint](https://golangci-lint.run/) will be run on your code on the CI server.
 
