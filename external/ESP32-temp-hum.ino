@@ -3,6 +3,7 @@
 #include <ArduinoJson.h>
 #include <time.h>
 #include <ctime>
+#include <cstdlib>
 extern "C" {
   #include "freertos/FreeRTOS.h"
   #include "freertos/timers.h"
@@ -13,8 +14,7 @@ extern "C" {
 #define WIFI_PASSWORD "Enter your WiFi password"
 
 // Raspberry Pi Mosquitto MQTT Broker
-#define MQTT_HOST IPAddress(192, 168, 1, xxx)
-//#define MQTT_HOST "example.com"
+#define MQTT_HOST IPAddress(172, 20, 1, xxx)
 #define MQTT_PORT 1883
 
 // Temperature MQTT Topics
@@ -24,7 +24,7 @@ extern "C" {
 // Digital pin connected to the DHT sensor
 #define DHTPIN 4  
 
-#define DHTTYPE DHT11   // DHT 11
+#define DHTTYPE DHT11
 
 #define ID "Enter your ID"
 #define PASS "Enter your password"
@@ -50,6 +50,9 @@ struct Measurement {
 Measurement measureH;
 Measurement measureT;
 
+String jsonH;
+String jsonT;
+
 // Creation of Json object
 StaticJsonDocument<200> toJsonH;
 StaticJsonDocument<200> toJsonT;
@@ -74,6 +77,18 @@ time_t current_time = time(nullptr);
 const char* ntpServer = "pool.ntp.org";
 const long  gmtOffset_sec = 3600;
 const int   daylightOffset_sec = 3600;
+
+struct tm timeinfo;
+
+void printLocalTime()
+{
+  //struct tm timeinfo;
+  if(!getLocalTime(&timeinfo)){
+    Serial.println("Failed to obtain time");
+    return;
+  }
+  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+}
 
 void connectToWifi() {
   Serial.println("Connecting to Wi-Fi...");
@@ -159,11 +174,11 @@ void setup() {
   toJsonT["unit"] = measureT.unit.c_str();
   toJsonT["timestamp"] = measureT.timestamp;
 
-  String jsonH;
-  String jsonT;
+  // Init and get the time
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  printLocalTime();
 
-  serializeJson(toJsonH, jsonH);
-  serializeJson(toJsonT, jsonT);
+  dht.begin();
   
   mqttReconnectTimer = xTimerCreate("mqttTimer", pdMS_TO_TICKS(2000), pdFALSE, (void*)0, reinterpret_cast<TimerCallbackFunction_t>(connectToMqtt));
   wifiReconnectTimer = xTimerCreate("wifiTimer", pdMS_TO_TICKS(2000), pdFALSE, (void*)0, reinterpret_cast<TimerCallbackFunction_t>(connectToWifi));
@@ -193,12 +208,11 @@ void loop() {
     toJsonH["value"] = hum;
     toJsonT["value"] = temp;
 
-    struct tm* timeinfo = localtime(&now);
-    strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
+    strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%S", &timeinfo);
     String timestamp = String(buffer);
     toJsonH["timestamp"] = timestamp;
     toJsonT["timestamp"] = timestamp;
-    //temp = dht.readTemperature(true);
+    //temp = dht.readTemperature(true); If Farhenheit is needed
 
 
     serializeJson(toJsonH, jsonH);
@@ -219,5 +233,9 @@ void loop() {
     uint16_t packetIdPub2 = mqttClient.publish(MQTT_PUB_HUM, QoS, true, jsonH.c_str());                            
     Serial.printf("Publishing on topic %s at QoS 1, packetId %i: ", MQTT_PUB_HUM, packetIdPub2);
     Serial.printf("Message: %.2f \n", hum);
+
+    // Init and get the time
+    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+    printLocalTime();
   }
 }
