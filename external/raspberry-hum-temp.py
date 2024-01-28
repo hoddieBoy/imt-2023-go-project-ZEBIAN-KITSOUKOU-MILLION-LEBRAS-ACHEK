@@ -9,8 +9,8 @@ from enum import Enum
 import json
 
 class MeasurementType(Enum):
-    TEMPERATURE = 1
-    HUMIDITY = 2
+    Temperature = 1
+    Humidity = 2
 
 class Measurement:
     def __init__(self, sensor_id: int, airport_id: str, type: MeasurementType, value: float, unit: str, timestamp: datetime):
@@ -33,12 +33,10 @@ class MeasurementEncoder(json.JSONEncoder):
                 'timestamp': obj.timestamp.isoformat()  # Convert datetime to ISO 8601 string
             }
         return super().default(obj)
-    
-
 
 # Define MQTT broker and topic
 broker = "localhost"
-topic = "capteur/TH"
+topic = "airport/T"
 port = 1883
 
 id = "inform your ID"
@@ -67,28 +65,33 @@ client.connect(broker, port)
 # Start the MQTT loop
 client.loop_start()
 
-DHTPin = 11     #define the pin of DHT11
+adc = ADCDevice() # Define an ADCDevice class object
+
+def setup():
+    global adc
+    if(adc.detectI2C(0x48)): #Detect the pcf8591.
+        adc = PCF8591()
+    elif(adc.detectI2C(0x4b)): #Detect the ads7830.
+        adc = ADS7830()
+    else:
+        print("No correct I2C address found, \n"
+        "Please use command 'i2cdetect -y 1' to check the I2C address! \n"
+        "Program Exit. \n")
+        exit(-1)
 
 def loop():
-    dht = DHT.DHT(DHTPin)   #create a DHT class object
-    counts = 0 # Measurement counts
     while(True):
-        counts += 1
-        print("Measurement counts: ", counts)
-        for i in range(0,15):            
-            chk = dht.readDHT11()     #read DHT11 and get a return value. Then determine whether data read is normal according to the return value.
-            if (chk is dht.DHTLIB_OK):      #read DHT11 and get a return value. Then determine whether data read is normal according to the return value.
-                print("DHT11,OK!")
-                break
-            time.sleep(0.1)
-        print("Humidity : %.2f, \t Temperature : %.2f \n"%(dht.humidity,dht.temperature))
-        
-        measurement = Measurement(1, 'airport1', MeasurementType.TEMPERATURE, dht.temperature, 'C', datetime.now())
+        value = adc.analogRead(0) #read the ADC value of A0 pin     
+        voltage = value / 255.0 * 3.3 #calculate the voltage value
+        Rt = 10 * voltage / (3.3 - voltage) #calculate the resistance value of the thermistor
+        tempK = 1/(1/(273.15 + 25) + math.log(Rt/10)/3950.0) #calculate the temperature(Kelvin)
+        tempC = tempK -273.15 #calculate the temperature(Celsius)
+        print ('ADC Value : %d, Voltage : %.2f, Temperature : %.2f'%(value,voltage,tempC))
+        measurement = Measurement(1, 'AKV', MeasurementType.Temperature, str(tempC), 'Celsius', datetime.now())
         json_str = json.dumps(measurement, cls=MeasurementEncoder)
         
-        
         client.publish(topic, f"{json_str}")
-        time.sleep(5)       
+        time.sleep(3)
         
 if __name__ == '__main__':
     print ('Program is starting ... ')
